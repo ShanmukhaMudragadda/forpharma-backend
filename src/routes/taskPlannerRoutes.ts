@@ -1,8 +1,8 @@
 import express from 'express'
 import tenantMiddleware from '@/middlewares/tenantMiddleware'
-import { createTaskPlannerController } from '@/controllers/taskPlanner/createTaskPlannerControlller';
-import { deleteTaskPlannerController } from '@/controllers/taskPlanner/deleteTaskPlannerController';
-import { getTaskPlannerController } from '@/controllers/taskPlanner/gettaskPlannerController';
+import { createTaskPlannerController } from '../controllers/taskPlanner/createTaskPlannerControlller';
+import { deleteTaskPlannerController } from '../controllers/taskPlanner/deleteTaskPlannerController';
+import { getTaskPlannerController } from '../controllers/taskPlanner/getTaskPlannerController';
 
 const router = express.Router();
 

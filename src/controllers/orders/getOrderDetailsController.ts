@@ -88,7 +88,7 @@ export const getOrderDetails = async (req: AuthenticatedRequest, res: Response) 
         }));
 
         // Calculate totals
-        const subtotal = transformedItems.reduce((sum, item) => sum + item.subtotal, 0);
+        const subtotal = transformedItems.reduce((sum: any, item: any) => sum + item.subtotal, 0);
         const itemCount = transformedItems.length;
 
         // Transform order details for frontend

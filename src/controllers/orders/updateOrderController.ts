@@ -164,7 +164,7 @@ export const updateOrder = async (req: AuthenticatedRequest, res: Response) => {
         }
 
         // Create drug map for price lookup
-        const drugMap = drugs.reduce((map, drug) => {
+        const drugMap = drugs.reduce((map: any, drug: any) => {
             map[drug.id] = drug;
             return map;
         }, {} as any);
