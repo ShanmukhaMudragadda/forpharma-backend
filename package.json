@@ -1,0 +1,59 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/main.js",
+  "type": "module",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "tsx watch main.ts",
+    "dev:nodemon": "nodemon",
+    "build": "tsc",
+    "prisma:generate": "npm run prisma:generate:shared && npm run prisma:generate:tenant",
+    "prisma:generate:shared": "prisma generate --schema=./prisma-shared/schema.prisma",
+    "prisma:migrate:shared": "prisma migrate dev --schema=./prisma-shared/schema.prisma",
+    "prisma:migrate:deploy": "prisma migrate deploy --schema=./prisma-shared/schema.prisma",
+    "prisma:generate:tenant": "prisma generate --schema=./prisma-tenant/schema.prisma",
+    "prisma:sql:tenant": "prisma migrate diff --from-empty --to-schema-datamodel ./prisma-tenant/schema.prisma --script > ./tenant-migrations/schema.sql",
+    "postinstall": "npm run prisma:generate && npm run prisma:sql:tenant",
+    "heroku-postbuild": "npm run build && npm run prisma:generate && npm run prisma:sql:tenant",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": "18.x",
+    "npm": "9.x"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.12.0",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "google-auth-library": "^10.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "juice": "^11.0.1",
+    "multer": "^2.0.2",
+    "nodemailer": "^6.9.0",
+    "pg": "^8.16.3",
+    "uuid": "^11.1.0",
+    "typescript": "^5.8.3",
+    "prisma": "^6.12.0",
+    "@types/node": "^24.0.14",
+    "tsx": "^4.20.3"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^9.9.0",
+    "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.8",
+    "@types/multer": "^2.0.0",
+    "@types/nodemailer": "^6.4.17",
+    "@types/uuid": "^10.0.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2"
+  }
+}

@@ -1,0 +1,46 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "../generated/prisma-shared"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum EmployeeRole {
+    MEDICAL_REPRESENTATIVE
+    SALES_MANAGER
+    SYSTEM_ADMINISTRATOR
+}
+
+model Organization {
+    id           String   @id @default(uuid())
+    name         String   @unique @db.VarChar(255)
+    schemaName   String?  @unique @db.VarChar(100)
+    address      String?  @db.Text
+    contactEmail String   @db.VarChar(255)
+    contactPhone String?  @db.VarChar(20)
+    website      String?  @db.VarChar(255)
+    settings     Json?    @db.JsonB
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+    isActive     Boolean  @default(true)
+
+    user User[]
+}
+
+model User {
+    id             String       @id @default(uuid())
+    organizationId String
+    organization   Organization @relation(fields: [organizationId], references: [id])
+    role           EmployeeRole
+    email          String       @unique @db.VarChar(255)
+    password       String       @db.VarChar(255)
+
+    // Timestamps
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    lastLoginAt DateTime?
+    isActive    Boolean   @default(true)
+}

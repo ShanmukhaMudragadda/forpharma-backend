@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Your Password - Welcome!</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+       
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+       
+        body {
+            font-family: 'Inter', 'Salesforce Sans', Arial, sans-serif;
+            line-height: 1.6;
+            color: #181818;
+            background-color: #F4F6F9;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+       
+        .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+       
+        .header {
+            background: linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%);
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+       
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+       
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+       
+        .logo-container {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+       
+        .logo-container .emoji {
+            font-size: 36px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+       
+        .header h1 {
+            color: #FFFFFF;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+       
+        .header p {
+            color: #E0F2FE;
+            font-size: 16px;
+            font-weight: 500;
+        }
+       
+        .content {
+            padding: 40px 30px;
+        }
+       
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+       
+        .avatar-placeholder {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #06B6D4 0%, #0EA5E9 100%);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+        }
+       
+        .avatar-placeholder span {
+            color: white;
+            font-size: 32px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+       
+        .content h2 {
+            color: #181818;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+       
+        .content p {
+            color: #706E6B;
+            font-size: 16px;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+       
+        .info-box {
+            background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 25px 0;
+            border-left: 4px solid #0EA5E9;
+            position: relative;
+            overflow: hidden;
+        }
+       
+        .info-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.1) 0%, transparent 70%);
+            transform: translate(30px, -30px);
+        }
+       
+        .info-box-content {
+            position: relative;
+            z-index: 1;
+        }
+       
+        .info-box strong {
+            color: #334155;
+            font-weight: 600;
+        }
+       
+        .info-box p {
+            margin: 0;
+            color: #475569;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+       
+        .cta-section {
+            text-align: center;
+            margin: 35px 0;
+        }
+       
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%);
+            color: #FFFFFF;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 44px;
+            text-align: center;
+        }
+       
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+       
+        .cta-button:hover::before {
+            left: 100%;
+        }
+       
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.5);
+        }
+       
+        .security-note {
+            color: #8E8D89;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(142, 141, 137, 0.05);
+            border-radius: 8px;
+        }
+       
+        .alternative-link {
+            background: linear-gradient(135deg, #FAFBFC 0%, #F8FAFC 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #E2E8F0;
+        }
+       
+        .alternative-link p:first-child {
+            color: #706E6B;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+       
+        .alternative-link p:last-child {
+            color: #0EA5E9;
+            font-size: 14px;
+            word-break: break-all;
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            background: rgba(14, 165, 233, 0.1);
+            padding: 8px;
+            border-radius: 6px;
+        }
+       
+        .features-preview {
+            background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+            text-align: center;
+        }
+       
+        .features-preview h3 {
+            color: #0369A1;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+       
+        .features-grid {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-start;
+        }
+       
+        .feature-item {
+            flex: 1;
+            min-width: 140px;
+            max-width: 180px;
+            text-align: center;
+        }
+       
+        .feature-item .emoji {
+            font-size: 28px;
+            margin-bottom: 10px;
+            display: block;
+        }
+       
+        .feature-item p {
+            color: #075985;
+            font-size: 14px;
+            margin: 0;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+       
+        .footer {
+            background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #E2E8F0;
+        }
+       
+        .footer p {
+            color: #8E8D89;
+            font-size: 14px;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+       
+        .footer p:last-child {
+            font-size: 12px;
+            margin: 0;
+            line-height: 1.4;
+        }
+       
+        .social-links {
+            margin: 20px 0;
+            text-align: center;
+        }
+       
+        .social-links a {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: #E2E8F0;
+            border-radius: 50%;
+            margin: 0 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+       
+        .social-links a:hover {
+            background: #0EA5E9;
+            transform: translateY(-2px);
+        }
+       
+        /* Mobile Optimizations */
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 10px;
+                border-radius: 8px;
+                box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            }
+           
+            .header {
+                padding: 30px 20px;
+            }
+           
+            .content {
+                padding: 30px 20px;
+            }
+           
+            .footer {
+                padding: 25px 20px;
+            }
+           
+            .header h1 {
+                font-size: 22px;
+                line-height: 1.3;
+            }
+           
+            .header p {
+                font-size: 15px;
+            }
+           
+            .logo-container {
+                width: 70px;
+                height: 70px;
+                margin-bottom: 15px;
+            }
+           
+            .logo-container .emoji {
+                font-size: 30px;
+            }
+           
+            .avatar-placeholder {
+                width: 70px;
+                height: 70px;
+                margin-bottom: 15px;
+            }
+           
+            .avatar-placeholder span {
+                font-size: 28px;
+            }
+           
+            .content h2 {
+                font-size: 20px;
+                line-height: 1.3;
+                margin-bottom: 15px;
+            }
+           
+            .content p {
+                font-size: 15px;
+                line-height: 1.6;
+                margin-bottom: 18px;
+            }
+           
+            .info-box {
+                padding: 18px;
+                margin: 20px 0;
+            }
+           
+            .info-box p {
+                font-size: 13px;
+                line-height: 1.5;
+            }
+           
+            .cta-button {
+                padding: 14px 24px;
+                font-size: 15px;
+                width: 100%;
+                max-width: 280px;
+                display: block;
+                margin: 0 auto;
+            }
+           
+            .security-note {
+                font-size: 13px;
+                padding: 12px;
+                margin-top: 25px;
+            }
+           
+            .alternative-link {
+                padding: 18px;
+                margin-top: 25px;
+            }
+           
+            .alternative-link p:first-child {
+                font-size: 13px;
+            }
+           
+            .alternative-link p:last-child {
+                font-size: 12px;
+                padding: 10px 8px;
+            }
+           
+            .features-preview {
+                padding: 20px 15px;
+                margin: 25px 0;
+            }
+           
+            .features-preview h3 {
+                font-size: 16px;
+                margin-bottom: 18px;
+                line-height: 1.3;
+            }
+           
+            .features-grid {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+            }
+           
+            .feature-item {
+                min-width: auto;
+                max-width: 200px;
+                width: 100%;
+            }
+           
+            .feature-item .emoji {
+                font-size: 24px;
+                margin-bottom: 8px;
+            }
+           
+            .feature-item p {
+                font-size: 13px;
+            }
+           
+            .footer p {
+                font-size: 13px;
+                margin-bottom: 12px;
+            }
+           
+            .footer p:last-child {
+                font-size: 11px;
+                line-height: 1.4;
+            }
+           
+            .social-links {
+                margin: 15px 0;
+            }
+           
+            .social-links a {
+                width: 36px;
+                height: 36px;
+                margin: 0 6px;
+            }
+        }
+       
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            .email-container {
+                margin: 5px;
+            }
+           
+            .header {
+                padding: 25px 15px;
+            }
+           
+            .content {
+                padding: 25px 15px;
+            }
+           
+            .footer {
+                padding: 20px 15px;
+            }
+           
+            .header h1 {
+                font-size: 20px;
+            }
+           
+            .content h2 {
+                font-size: 18px;
+            }
+           
+            .features-preview {
+                padding: 18px 12px;
+            }
+           
+            .cta-button {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+        }
+       
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .alternative-link {
+                background: #334155;
+                border-color: #475569;
+            }
+           
+            .info-box {
+                background: #334155;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+<div class="header">
+    <div class="header-content">
+        <div class="logo-container">
+            <span class="emoji">🚀</span>
+        </div>
+        <h1>Welcome to Our Platform!</h1>
+        <p>Your account has been created successfully</p>
+    </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+    <div class="welcome-section">
+        <div class="avatar-placeholder">
+            <span>🔐</span>
+        </div>
+    </div>
+
+    <h2>Hello {{USER_NAME}}!</h2>
+
+    <p>
+        Your administrator has created an account for you on our platform. To get started and secure your account,
+        you'll need to set your password by clicking the button below.
+    </p>
+
+    <div class="info-box">
+        <div class="info-box-content">
+            <p>
+                <strong>Account Details:</strong><br>
+                <strong>Email:</strong> {{USER_EMAIL}}<br>
+                <strong>Name:</strong> {{USER_NAME}}<br>
+                <strong>Department:</strong> {{USER_DEPARTMENT}}<br>
+                <strong>Role:</strong> {{USER_ROLE}}
+            </p>
+        </div>
+    </div>
+
+    <!-- CTA Button -->
+    <div class="cta-section">
+        <a href="{{RESET_URL}}" class="cta-button">
+            🔓 Set My Password
+        </a>
+    </div>
+
+    <div class="security-note">
+        <p>🔒 This secure link will expire in 24 hours for your protection.</p>
+    </div>
+
+    <!-- Alternative link -->
+    <div class="alternative-link">
+        <p>If the button doesn't work, copy and paste this link into your browser:</p>
+        <p>{{RESET_URL}}</p>
+    </div>
+
+    <!-- Features Preview -->
+    <div class="features-preview">
+        <h3>What you can do once you're set up:</h3>
+        <div class="features-grid">
+            <div class="feature-item">
+                <span class="emoji">📊</span>
+                <p>Access Dashboard</p>
+            </div>
+            <div class="feature-item">
+                <span class="emoji">👥</span>
+                <p>Collaborate with Team</p>
+            </div>
+            <div class="feature-item">
+                <span class="emoji">⚡</span>
+                <p>Boost Productivity</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    <div class="social-links">
+        <a href="#" title="Facebook"></a>
+        <a href="#" title="Twitter"></a>
+        <a href="#" title="LinkedIn"></a>
+    </div>
+
+    <p>
+        If you didn't expect this email or need assistance, please contact your administrator
+        or reach out to our support team.
+    </p>
+
+    <p>
+        © 2025 {{COMPANY_NAME}}. All rights reserved.<br>
+        This email was sent to {{USER_EMAIL}}
+    </p>
+</div>
+</div>
+</body>
+
+</html>

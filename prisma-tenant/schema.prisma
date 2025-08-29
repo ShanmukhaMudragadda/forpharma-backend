@@ -1,0 +1,1053 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "../generated/prisma-tenant"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("TENANT_DATABASE_URL")
+}
+
+// ENUMS
+enum EmployeeRole {
+    MEDICAL_REPRESENTATIVE
+    SALES_MANAGER
+    SYSTEM_ADMINISTRATOR
+}
+
+enum TaskType {
+    DOCTOR
+    CHEMIST
+    TOUR_PLANNER
+}
+
+// enum TaskStatus {
+//     PENDING
+//     COMPLETED
+//     RESCHEDULED
+// }
+enum CompletionStatus {
+    PENDING
+    COMPLETED
+    RESCHEDULED
+}
+
+enum AssociationType {
+    DOCTOR
+    CHEMIST
+}
+
+enum DayOfWeek {
+    MONDAY
+    TUESDAY
+    WEDNESDAY
+    THURSDAY
+    FRIDAY
+    SATURDAY
+    SUNDAY
+}
+
+enum ConsultationType {
+    OPD
+    EMERGENCY
+    SURGERY
+    SPECIAL
+}
+
+enum InteractionType {
+    MEETING
+    CALL
+    EMAIL
+    WHATSAPP
+}
+
+enum OrderStatus {
+    CONFIRMED
+    DRAFT
+}
+
+enum EventType {
+    MEETING
+    VISIT
+    TRAINING
+    OTHER
+}
+
+enum EventStatus {
+    SCHEDULED
+    COMPLETED
+    CANCELLED
+    RESCHEDULED
+}
+
+enum ExpenseClaimStatus {
+    PENDING
+    APPROVED
+    REJECTED
+}
+
+// enum TaskPlannerStatus {
+//     DRAFT
+//     PENDING_APPROVAL
+//     APPROVED
+//     REJECTED
+// }
+
+enum ApprovalStatus {
+    DRAFT
+    PENDING_APPROVAL
+    APPROVED
+    REJECTED
+}
+
+enum TaskTypeReference {
+    DOCTOR_TASK
+    CHEMIST_TASK
+    TOUR_PLAN_TASK
+}
+
+enum ChemistType {
+    CHEMIST
+    STOCKIST
+}
+
+enum ReportingPeriod {
+    WEEKLY
+    MONTHLY
+}
+
+// CORE SYSTEM TABLES
+
+model Employee {
+    id             String @id @default(uuid())
+    organizationId String @map("organization_id")
+
+    // Authentication fields
+    email        String @unique @db.VarChar(255)
+    passwordHash String @map("password_hash") @db.VarChar(255)
+
+    // Personal information
+    firstName  String  @map("first_name") @db.VarChar(100)
+    lastName   String? @map("last_name") @db.VarChar(100)
+    phone      String? @db.VarChar(20)
+    profilePic String? @map("profile_pic")
+
+    // Role and hierarchy
+    role               EmployeeRole
+    reportingManagerId String?      @map("reporting_manager_id")
+    reportingManager   Employee?    @relation("EmployeeManager", fields: [reportingManagerId], references: [id])
+    subordinates       Employee[]   @relation("EmployeeManager")
+
+    // Team
+    teamId    String? @map("team_id")
+    team      Team?   @relation("TeamMembers", fields: [teamId], references: [id])
+    leadsTeam Team?   @relation("TeamLead")
+
+    // Employee details
+    employeeCode      String?  @map("employee_code") @db.VarChar(50)
+    city              String?  @db.VarChar(100)
+    state             String?  @db.VarChar(100)
+    assignedLatitude  Decimal? @db.Decimal(10, 8)
+    assignedLongitude Decimal? @db.Decimal(11, 8)
+
+    // Timestamps
+    createdAt   DateTime  @default(now()) @map("created_at")
+    updatedAt   DateTime  @updatedAt @map("updated_at")
+    lastLoginAt DateTime? @map("last_login_at")
+    isActive    Boolean   @default(true) @map("is_active")
+
+    // Relations
+    territories            EmployeeTerritory[]
+    trainingRecords        EmployeeTrainingRecord[]
+    doctorNotes            DoctorNote[]
+    chemistNotes           ChemistNote[]
+    doctorInteractions     DoctorInteraction[]
+    chemistInteractions    ChemistInteraction[]
+    dcrReports             DcrReport[]
+    rcpaReports            RcpaReport[]
+    checkIns               CheckIn[]
+    // calendarEvents         CalendarEvent[]
+    auditLogs              AuditLog[]
+    ordersCreated          Order[]                  @relation("OrderCreatedBy")
+    // inventoryUpdates       ChemistDrugInventory[]    @relation("InventoryUpdatedBy")
+    doctorsCreated         Doctor[]                 @relation("DoctorCreatedBy")
+    drugsCreated           Drug[]                   @relation("DrugCreatedBy")
+    chemistsCreated        Chemist[]                @relation("ChemistCreatedBy")
+    doctorChemistRelations DoctorChemistRelation[]  @relation("RelationCreatedBy")
+    expenseClaims          ExpenseClaim[]
+    approvedClaims         ExpenseClaim[]           @relation("ApprovedBy")
+    drugInventories        UserDrugInventory[]
+    giftInventories        UserGiftInventory[]
+    giftsCreated           Gift[]                   @relation("GiftCreatedBy")
+    sampleDistributions    SampleDistribution[]
+    taskPlans              TaskPlanner[]
+    doctorTasks            DoctorTask[]
+    chemistTasks           ChemistTask[]
+    tourPlanTasks          TourPlanTask[]
+
+    @@map("employees")
+}
+
+model Team {
+    id       String   @id @default(uuid())
+    teamName String   @map("team_name") @db.VarChar(255)
+    // Relation
+    leadId   String   @unique @map("lead_id")
+    leadName Employee @relation("TeamLead", fields: [leadId], references: [id])
+
+    teamMembers Employee[] @relation("TeamMembers")
+
+    // Timestamps
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+    isActive  Boolean  @default(true) @map("is_active")
+}
+
+model Territory {
+    id             String @id @default(uuid()) @map("territory_id")
+    organizationId String @map("organization_id")
+    // organization   Organization @relation(fields: [organizationId], references: [id])
+
+    name              String      @db.VarChar(255)
+    type              String      @db.VarChar(100) // region, state, city, area
+    parentTerritoryId String?     @map("parent_territory_id")
+    parentTerritory   Territory?  @relation("TerritoryHierarchy", fields: [parentTerritoryId], references: [id])
+    childTerritories  Territory[] @relation("TerritoryHierarchy")
+
+    boundaries Json?    @db.JsonB
+    createdAt  DateTime @default(now()) @map("created_at")
+    updatedAt  DateTime @updatedAt @map("updated_at")
+
+    // Relations
+    employees EmployeeTerritory[]
+    hospitals Hospital[]
+    chemists  Chemist[]
+
+    @@map("territories")
+}
+
+model EmployeeTerritory {
+    id          String    @id @default(uuid())
+    employeeId  String    @map("employee_id")
+    employee    Employee  @relation(fields: [employeeId], references: [id])
+    territoryId String    @map("territory_id")
+    territory   Territory @relation(fields: [territoryId], references: [id])
+
+    assignedAt   DateTime  @map("assigned_at")
+    unassignedAt DateTime? @map("unassigned_at")
+    isPrimary    Boolean   @default(false) @map("is_primary")
+
+    @@map("employee_territories")
+}
+
+model EmployeeTrainingRecord {
+    id         String   @id @default(uuid())
+    employeeId String   @map("employee_id")
+    employee   Employee @relation(fields: [employeeId], references: [id])
+
+    trainingName   String   @map("training_name") @db.VarChar(255)
+    description    String?  @db.Text
+    completionDate DateTime @map("completion_date") @db.Date
+    // certificateUrl String?  @map("certificate_url") @db.VarChar(500)
+    createdAt      DateTime @default(now()) @map("created_at")
+
+    @@map("employee_training_records")
+}
+
+// CHAIN MANAGEMENT
+model HospitalChain {
+    id             String @id @default(uuid())
+    organizationId String @map("organization_id")
+    // organization   Organization @relation(fields: [organizationId], references: [id])
+
+    name                String  @db.VarChar(255)
+    // code                 String?      @db.VarChar(50)
+    // description          String?      @db.Text
+    headquartersAddress String? @map("headquarters_address") @db.Text
+    contactEmail        String? @map("contact_email") @db.VarChar(255)
+    contactPhone        String? @map("contact_phone") @db.VarChar(20)
+    // metadata             Json?        @db.JsonB
+
+    // Timestamps
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+    isActive  Boolean  @default(true) @map("is_active")
+
+    // Relations
+    hospitals Hospital[]
+
+    @@map("hospital_chains")
+}
+
+model ChemistChain {
+    id             String @id @default(uuid()) @map("chemist_chain_id")
+    organizationId String @map("organization_id")
+    // organization   Organization @relation(fields: [organizationId], references: [id])
+
+    name                String  @db.VarChar(255)
+    // code                 String?      @db.VarChar(50)
+    // description          String?      @db.Text
+    headquartersAddress String? @map("headquarters_address") @db.Text
+    contactEmail        String? @map("contact_email") @db.VarChar(255)
+    contactPhone        String? @map("contact_phone") @db.VarChar(20)
+    // metadata             Json?        @db.JsonB
+
+    // Timestamps
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+    isActive  Boolean  @default(true) @map("is_active")
+
+    // Relations
+    chemists Chemist[]
+
+    @@map("chemist_chains")
+}
+
+// HOSPITAL MANAGEMENT
+model Hospital {
+    id              String         @id @default(uuid()) @map("hospital_id")
+    organizationId  String         @map("organization_id")
+    // organization    Organization   @relation(fields: [organizationId], references: [id])
+    hospitalChainId String?        @map("hospital_chain_id")
+    hospitalChain   HospitalChain? @relation(fields: [hospitalChainId], references: [id])
+    territoryId     String         @map("territory_id")
+    territory       Territory      @relation(fields: [territoryId], references: [id])
+
+    name        String   @db.VarChar(255)
+    type        String   @db.VarChar(100)
+    address     String   @db.Text
+    city        String?  @db.VarChar(100)
+    state       String?  @db.VarChar(100)
+    pincode     String?  @db.VarChar(10)
+    latitude    Decimal? @db.Decimal(10, 8)
+    longitude   Decimal? @db.Decimal(11, 8)
+    phone       String?  @db.VarChar(20)
+    email       String?  @db.VarChar(255)
+    website     String?  @db.VarChar(255)
+    description String?  @db.Text
+    // facilities       Json?          @db.JsonB
+    // metadata         Json?          @db.JsonB
+
+    // Timestamps
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+    isActive  Boolean  @default(true) @map("is_active")
+
+    // Relations
+    doctorAssociations    DoctorHospitalAssociation[]
+    consultationSchedules DoctorConsultationSchedule[]
+    doctorInteractions    DoctorInteraction[]
+    // dcrReports             DcrReport[]
+
+    @@map("hospitals")
+}
+
+// DOCTOR MODULE
+model Doctor {
+    id             String @id @default(uuid()) @map("doctor_id")
+    organizationId String @map("organization_id")
+    // organization   Organization @relation(fields: [organizationId], references: [id])
+
+    name              String  @db.VarChar(255)
+    designation       String? @db.VarChar(255)
+    specialization    String? @db.VarChar(255)
+    email             String? @db.VarChar(255)
+    phone             String? @db.VarChar(20)
+    description       String? @db.Text
+    profilePictureUrl String? @map("profile_picture_url") @db.VarChar(500)
+    qualification     String? @db.VarChar(255)
+    experienceYears   Int?    @map("experience_years")
+    // prescriptionPatterns Json? @map("prescription_patterns") @db.JsonB
+
+    // Timestamps
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+    createdById String   @map("created_by")
+    createdBy   Employee @relation("DoctorCreatedBy", fields: [createdById], references: [id])
+    isActive    Boolean  @default(true) @map("is_active")
+
+    // Relations
+    hospitalAssociations  DoctorHospitalAssociation[]
+    consultationSchedules DoctorConsultationSchedule[]
+    interactions          DoctorInteraction[]
+    notes                 DoctorNote[]
+    chemistRelations      DoctorChemistRelation[]
+    // drugPrescriptions      DrugPrescription[]
+    // dcrReports            DcrReport[]
+    DoctorTask            DoctorTask[]
+    sampleDistributions   SampleDistribution[]
+
+    @@map("doctors")
+}
+
+model DoctorHospitalAssociation {
+    id         String   @id @default(uuid())
+    doctorId   String   @map("doctor_id")
+    doctor     Doctor   @relation(fields: [doctorId], references: [id])
+    hospitalId String   @map("hospital_id")
+    hospital   Hospital @relation(fields: [hospitalId], references: [id])
+
+    department           String?   @db.VarChar(255)
+    position             String?   @db.VarChar(255)
+    isPrimary            Boolean   @default(false) @map("is_primary")
+    associationStartDate DateTime? @map("association_start_date")
+    associationEndDate   DateTime? @map("association_end_date")
+
+    // Timestamps
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@unique([doctorId, hospitalId])
+    @@map("doctor_hospital_associations")
+}
+
+model DoctorConsultationSchedule {
+    id         String   @id @default(uuid())
+    doctorId   String   @map("doctor_id")
+    doctor     Doctor   @relation(fields: [doctorId], references: [id])
+    hospitalId String   @map("hospital_id")
+    hospital   Hospital @relation(fields: [hospitalId], references: [id])
+
+    dayOfWeek        DayOfWeek        @map("day_of_week")
+    startTime        DateTime         @map("start_time") @db.Time
+    endTime          DateTime         @map("end_time") @db.Time
+    consultationType ConsultationType @map("consultation_type")
+    // notes            String?          @db.Text
+
+    isActive      Boolean   @default(true) @map("is_active")
+    effectiveFrom DateTime? @map("effective_from")
+    effectiveTo   DateTime? @map("effective_to")
+    createdAt     DateTime  @default(now()) @map("created_at")
+    updatedAt     DateTime  @updatedAt @map("updated_at")
+
+    @@map("doctor_consultation_schedules")
+}
+
+model DoctorNote {
+    id          String   @id @default(uuid())
+    doctorId    String   @map("doctor_id")
+    doctor      Doctor   @relation(fields: [doctorId], references: [id])
+    createdById String   @map("created_by")
+    createdBy   Employee @relation(fields: [createdById], references: [id])
+
+    content String @db.Text
+    // contentHtml String?  @map("content_html") @db.Text
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("doctor_notes")
+}
+
+model DoctorInteraction {
+    id         String    @id @default(uuid())
+    doctorId   String    @map("doctor_id")
+    doctor     Doctor    @relation(fields: [doctorId], references: [id])
+    employeeId String    @map("employee_id")
+    employee   Employee  @relation(fields: [employeeId], references: [id])
+    hospitalId String?   @map("hospital_id")
+    hospital   Hospital? @relation(fields: [hospitalId], references: [id])
+
+    interactionType InteractionType @map("interaction_type")
+    startTime       DateTime        @map("start_time")
+    endTime         DateTime?       @map("end_time")
+    purpose         String?         @db.Text
+    outcome         String?         @db.Text
+    comments        String?         @db.Text
+    rating          Int?            @db.SmallInt
+    // metadata        Json?           @db.JsonB
+
+    createdAt DateTime @default(now()) @map("created_at")
+
+    DoctorTask   DoctorTask? @relation(fields: [doctorTaskId], references: [id])
+    doctorTaskId String?
+
+    @@map("doctor_interactions")
+}
+
+// DRUG MODULE
+model Drug {
+    id             String @id @default(uuid()) @map("drug_id")
+    organizationId String @map("organization_id")
+    // organization   Organization @relation(fields: [organizationId], references: [id])
+
+    name                String   @db.VarChar(255)
+    composition         String?  @db.Text
+    manufacturer        String?  @db.VarChar(255)
+    indications         String?  @db.Text
+    sideEffects         String?  @map("side_effects") @db.Text
+    safetyAdvice        String?  @map("safety_advice") @db.Text
+    dosageForms         Json?    @map("dosage_forms") @db.JsonB // JSON, ENUM, or String?
+    price               Decimal? @db.Decimal(10, 2)
+    schedule            String?  @db.VarChar(10)
+    regulatoryApprovals String?  @map("regulatory_approvals") @db.Text
+    category            String?  @db.VarChar(100)
+    isAvailable         Boolean  @default(true) @map("is_available")
+    images              Json?    @db.JsonB
+    marketingMaterials  Json?    @map("marketing_materials") @db.JsonB
+
+    // Timestamps
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+    createdById String   @map("created_by")
+    createdBy   Employee @relation("DrugCreatedBy", fields: [createdById], references: [id])
+    isActive    Boolean  @default(true) @map("is_active")
+
+    // Relations
+    orderItems        OrderItem[]
+    rcpaData          RcpaDrugData[]
+    UserDrugInventory UserDrugInventory[]
+    // SampleDistributionDrugItem SampleDistributionDrugItem[]
+
+    @@map("drugs")
+}
+
+// CHEMIST MODULE
+model Chemist {
+    id             String        @id @default(uuid()) @map("chemist_id")
+    organizationId String        @map("organization_id")
+    // organization   Organization  @relation(fields: [organizationId], references: [id])
+    chemistChainId String?       @map("chemist_chain_id")
+    chemistChain   ChemistChain? @relation(fields: [chemistChainId], references: [id])
+    territoryId    String        @map("territory_id")
+    territory      Territory     @relation(fields: [territoryId], references: [id])
+
+    name              String      @db.VarChar(255)
+    type              ChemistType
+    email             String?     @db.VarChar(255)
+    phone             String?     @db.VarChar(20)
+    address           String?     @db.Text
+    city              String?     @db.VarChar(100)
+    state             String?     @db.VarChar(100)
+    pincode           String?     @db.VarChar(10)
+    latitude          Decimal?    @db.Decimal(10, 8)
+    longitude         Decimal?    @db.Decimal(11, 8)
+    description       String?     @db.Text
+    profilePictureUrl String?     @map("profile_picture_url") @db.VarChar(500)
+    // licenseNumber        String?       @map("license_number") @db.VarChar(100)
+    visitingHours     String?     @map("visiting_hours") @db.VarChar(255)
+
+    // Timestamps
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+    createdById String   @map("created_by")
+    createdBy   Employee @relation("ChemistCreatedBy", fields: [createdById], references: [id])
+    isActive    Boolean  @default(true) @map("is_active")
+
+    // Relations
+    notes               ChemistNote[]
+    // drugInventory        ChemistDrugInventory[]
+    interactions        ChemistInteraction[]
+    doctorRelations     DoctorChemistRelation[]
+    orders              Order[]
+    rcpaReports         RcpaReport[]
+    chemistTasks        ChemistTask[]
+    sampleDistributions SampleDistribution[]
+
+    @@map("chemists")
+}
+
+model ChemistNote {
+    id          String   @id @default(uuid())
+    chemistId   String   @map("chemist_id")
+    chemist     Chemist  @relation(fields: [chemistId], references: [id])
+    createdById String   @map("created_by")
+    createdBy   Employee @relation(fields: [createdById], references: [id])
+
+    content String @db.Text
+    // contentHtml String?  @map("content_html") @db.Text
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("chemist_notes")
+}
+
+model ChemistInteraction {
+    id         String   @id @default(uuid())
+    chemistId  String   @map("chemist_id")
+    chemist    Chemist  @relation(fields: [chemistId], references: [id])
+    employeeId String   @map("employee_id")
+    employee   Employee @relation(fields: [employeeId], references: [id])
+
+    interactionType InteractionType @map("interaction_type")
+    startTime       DateTime        @map("start_time")
+    endTime         DateTime?       @map("end_time")
+    purpose         String?         @db.Text
+    outcome         String?         @db.Text
+    comments        String?         @db.Text
+    rating          Int?            @db.SmallInt
+    // metadata        Json?           @db.JsonB
+
+    createdAt     DateTime     @default(now()) @map("created_at")
+    chemistTaskId String?
+    chemistTask   ChemistTask? @relation(fields: [chemistTaskId], references: [id])
+
+    @@map("chemist_interactions")
+}
+
+// CROSS-MODULE RELATIONSHIPS
+model DoctorChemistRelation {
+    id        String  @id @default(uuid())
+    doctorId  String  @map("doctor_id")
+    doctor    Doctor  @relation(fields: [doctorId], references: [id])
+    chemistId String  @map("chemist_id")
+    chemist   Chemist @relation(fields: [chemistId], references: [id])
+
+    // relationshipType RelationshipType @map("relationship_type")
+
+    createdAt   DateTime @default(now()) @map("created_at")
+    createdById String   @map("created_by")
+    createdBy   Employee @relation("RelationCreatedBy", fields: [createdById], references: [id])
+
+    @@map("doctor_chemist_relations")
+}
+
+// ORDER MODULE
+model Order {
+    id             String @id @default(uuid()) @map("order_id")
+    organizationId String @map("organization_id")
+    // organization   Organization @relation(fields: [organizationId], references: [id])
+
+    // orderType           OrderType   @map("order_type")
+    chemistId String?  @map("chemist_id")
+    chemist   Chemist? @relation(fields: [chemistId], references: [id])
+    // customerType        String?     @map("customer_type") // 'doctor' or 'chemist'
+
+    totalAmount         Decimal     @map("total_amount") @db.Decimal(10, 2)
+    status              OrderStatus
+    orderDate           DateTime    @map("order_date")
+    deliveryDate        DateTime?   @map("delivery_date")
+    specialInstructions String?     @map("special_instructions") @db.Text
+    // metadata            Json?       @db.JsonB
+
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+    createdById String   @map("created_by")
+    createdBy   Employee @relation("OrderCreatedBy", fields: [createdById], references: [id])
+
+    // Relations
+    items OrderItem[]
+
+    @@map("orders")
+}
+
+model OrderItem {
+    // id      String @id @default(uuid())
+    orderId String @map("order_id")
+    order   Order  @relation(fields: [orderId], references: [id])
+    drugId  String @map("drug_id")
+    drug    Drug   @relation(fields: [drugId], references: [id])
+
+    quantity  Int
+    unitPrice Decimal @map("unit_price") @db.Decimal(10, 2)
+    subtotal  Decimal @db.Decimal(10, 2)
+
+    createdAt DateTime @default(now()) @map("created_at")
+
+    @@id([orderId, drugId])
+    @@map("order_items")
+}
+
+// DCR (Daily Call Report) MODULE (Under contention)
+model DcrReport {
+    id             String             @id @default(uuid())
+    organizationId String             @map("organization_id")
+    // organization   Organization       @relation(fields: [organizationId], references: [id])
+    employeeId     String             @map("employee_id")
+    employee       Employee           @relation(fields: [employeeId], references: [id])
+    // Polymorphic task reference
+    taskId         String?            @map("task_id")
+    taskType       TaskTypeReference? @map("task_type")
+
+    reportDate        DateTime @map("report_date") @db.Date
+    productsDiscussed String?  @map("products_discussed") @db.Text
+    comments          String?  @db.Text
+    // samplesGiven      Json?   @map("samples_given") @db.JsonB
+    // promotionalItems  Json?   @map("promotional_items") @db.JsonB
+    isDraft           Boolean  @default(true) @map("is_draft")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("dcr_reports")
+}
+
+// RCPA (Retail Chemist Prescription Audit) MODULE (Under contention)
+model RcpaReport {
+    id             String   @id @default(uuid())
+    organizationId String   @map("organization_id")
+    // organization   Organization @relation(fields: [organizationId], references: [id])
+    employeeId     String   @map("employee_id")
+    employee       Employee @relation(fields: [employeeId], references: [id])
+    chemistId      String   @map("chemist_id")
+    chemist        Chemist  @relation(fields: [chemistId], references: [id])
+
+    // New reporting period fields
+    reportingPeriod ReportingPeriod @map("reporting_period")
+    startDate       DateTime        @map("start_date")
+    endDate         DateTime        @map("end_date")
+
+    totalPrescription Int?    @map("total_prescription")
+    // observationDate DateTime @map("observation_date")
+    remarks           String? @db.Text
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    // Relations
+    drugData RcpaDrugData[]
+
+    @@map("rcpa_reports")
+}
+
+model RcpaDrugData {
+    id                 String     @id @default(uuid())
+    rcpaReportId       String     @map("rcpa_report_id")
+    rcpaReport         RcpaReport @relation(fields: [rcpaReportId], references: [id])
+    drugId             String?    @map("drug_id")
+    drug               Drug?      @relation(fields: [drugId], references: [id])
+    competitorDrugName String?    @map("competitor_drug_name") @db.VarChar(255)
+
+    ownQuantity        Int @map("own_quantity")
+    competitorQuantity Int @map("competitor_quantity")
+
+    ownPackSize        String   @map("own_pack_size")
+    competitorPackSize String   @map("competitor_pack_size")
+    createdAt          DateTime @default(now()) @map("created_at")
+
+    @@map("rcpa_drug_data")
+}
+
+// CHECK-IN/ATTENDANCE MODULE
+model CheckIn {
+    id             String   @id @default(uuid())
+    organizationId String   @map("organization_id")
+    // organization   Organization @relation(fields: [organizationId], references: [id])
+    employeeId     String   @map("employee_id")
+    employee       Employee @relation(fields: [employeeId], references: [id])
+
+    checkInTime       DateTime? @map("check_in_time")
+    checkOutTime      DateTime? @map("check_out_time")
+    checkInLatitude   Decimal?  @map("check_in_latitude") @db.Decimal(10, 8)
+    checkInLongitude  Decimal?  @map("check_in_longitude") @db.Decimal(11, 8)
+    checkOutLatitude  Decimal?  @map("check_out_latitude") @db.Decimal(10, 8)
+    checkOutLongitude Decimal?  @map("check_out_longitude") @db.Decimal(11, 8)
+    // metadata              Json?    @db.JsonB
+
+    createdAt DateTime @default(now()) @map("created_at")
+
+    @@map("check_ins")
+}
+
+// TASK PLANNER MODULE
+model TaskPlanner {
+    id             String         @id @default(uuid())
+    employeeId     String         @map("employee_id")
+    employee       Employee       @relation(fields: [employeeId], references: [id])
+    startDate      DateTime       @map("start_date") @db.Date
+    endDate        DateTime       @map("end_date") @db.Date
+    // status     TaskPlannerStatus @default(DRAFT)
+    approvalStatus ApprovalStatus @default(DRAFT)
+
+    isActive  Boolean  @default(true) @map("is_active")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    doctorTasks   DoctorTask[]
+    chemistTasks  ChemistTask[]
+    tourPlanTasks TourPlanTask[]
+
+    @@map("task_planners")
+}
+
+model DoctorTask {
+    id         String      @id @default(uuid())
+    plannerId  String      @map("task_planner_id")
+    planner    TaskPlanner @relation(fields: [plannerId], references: [id])
+    employeeId String      @map("employee_id")
+    employee   Employee    @relation(fields: [employeeId], references: [id])
+    doctorId   String      @map("doctor_id")
+    doctor     Doctor      @relation(fields: [doctorId], references: [id])
+
+    taskDate         DateTime         @db.Date
+    startTime        DateTime         @map("start_time") @db.Time
+    endTime          DateTime         @map("end_time") @db.Time
+    // taskStatus TaskStatus @default(PENDING)
+    completionStatus CompletionStatus @default(PENDING)
+    approvalStatus   ApprovalStatus   @default(DRAFT)
+    isActive         Boolean          @default(true) @map("is_active")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    doctorInteractions DoctorInteraction[]
+
+    @@map("doctor_tasks")
+}
+
+model ChemistTask {
+    id         String      @id @default(uuid())
+    plannerId  String      @map("task_planner_id")
+    planner    TaskPlanner @relation(fields: [plannerId], references: [id])
+    employeeId String      @map("employee_id")
+    employee   Employee    @relation(fields: [employeeId], references: [id])
+    chemistId  String      @map("chemist_id")
+    chemist    Chemist     @relation(fields: [chemistId], references: [id])
+
+    taskDate         DateTime         @db.Date
+    startTime        DateTime         @map("start_time") @db.Time
+    endTime          DateTime         @map("end_time") @db.Time
+    // taskStatus TaskStatus @default(PENDING)
+    completionStatus CompletionStatus @default(PENDING)
+    approvalStatus   ApprovalStatus   @default(DRAFT)
+    isActive         Boolean          @default(true) @map("is_active")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    chemistInteractions ChemistInteraction[]
+
+    @@map("chemist_tasks")
+}
+
+model TourPlanTask {
+    id         String      @id @default(uuid())
+    plannerId  String      @map("task_planner_id")
+    planner    TaskPlanner @relation(fields: [plannerId], references: [id])
+    employeeId String      @map("employee_id")
+    employee   Employee    @relation(fields: [employeeId], references: [id])
+    tourPlanId String      @map("tour_plan_id")
+    tourPlan   TourPlan    @relation(fields: [tourPlanId], references: [id])
+
+    location         String           @db.VarChar(255)
+    taskDate         DateTime         @db.Date
+    startTime        DateTime         @map("start_time") @db.Time
+    endTime          DateTime         @map("end_time") @db.Time
+    // taskStatus TaskStatus @default(PENDING)
+    completionStatus CompletionStatus @default(PENDING)
+    approvalStatus   ApprovalStatus   @default(DRAFT)
+    isActive         Boolean          @default(true) @map("is_active")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    tourPlanReports TourPlanReport[]
+
+    @@map("tour_plan_tasks")
+}
+
+model TourPlan {
+    id          String   @id @default(uuid())
+    name        String   @db.VarChar(255)
+    description String?  @db.Text
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+
+    tourTasks TourPlanTask[]
+
+    @@map("tour_plans")
+}
+
+model TourPlanReport {
+    id              String       @id @default(uuid())
+    tourTaskId      String       @map("task_for_tour_planner_id")
+    tourTask        TourPlanTask @relation(fields: [tourTaskId], references: [id])
+    // Optional fields below only if you need to support audit or multi-actor:
+    // employeeId     String             @map("employee_id")
+    // employee       Employee           @relation(fields: [employeeId], references: [id])
+    interactionTime DateTime     @default(now()) @map("interaction_time")
+    purpose         String?      @db.VarChar(255)
+    outcome         String?      @db.Text
+    comments        String?      @db.Text
+    createdAt       DateTime     @default(now()) @map("created_at")
+    updatedAt       DateTime     @updatedAt @map("updated_at")
+
+    @@map("tour_planner_interactions")
+}
+
+// EXPENSE CLAIM MODULE
+model ExpenseType {
+    id          String   @id @default(uuid())
+    name        String   @unique @db.VarChar(50)
+    description String?  @db.Text
+    icon        String?
+    formFields  Json     @map("form_fields")
+    isActive    Boolean  @default(true) @map("is_active")
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+
+    roleConfigs   ExpenseRoleConfig[]
+    expenseClaims ExpenseClaim[]
+
+    @@map("expense_types")
+}
+
+model ExpenseRoleConfig {
+    id              String       @id @default(uuid())
+    expenseTypeId   String       @map("expense_type_id")
+    role            EmployeeRole
+    limits          Json
+    rates           Json?
+    validationRules Json         @map("validation_rules")
+    isActive        Boolean      @default(true) @map("is_active")
+    createdAt       DateTime     @default(now()) @map("created_at")
+    updatedAt       DateTime     @updatedAt @map("updated_at")
+
+    expenseType   ExpenseType    @relation(fields: [expenseTypeId], references: [id])
+    expenseClaims ExpenseClaim[]
+
+    @@unique([expenseTypeId, role])
+    @@map("expense_role_configs")
+}
+
+model ExpenseClaim {
+    id                  String @id @default(uuid())
+    claimNumber         String @unique @map("claim_number") @db.VarChar(50)
+    employeeId          String @map("employee_id")
+    expenseTypeId       String @map("expense_type_id")
+    expenseRoleConfigId String @map("expense_role_config_id")
+
+    expenseData      Json               @map("expense_data")
+    status           ExpenseClaimStatus @default(PENDING)
+    submittedAt      DateTime           @default(now()) @map("submitted_at")
+    approvedAt       DateTime?          @map("approved_at")
+    approvedBy       String?            @map("approved_by")
+    approvalComments String?            @map("approval_comments") @db.Text
+    rejectionReason  String?            @map("rejection_reason") @db.Text
+    createdAt        DateTime           @default(now()) @map("created_at")
+    updatedAt        DateTime           @updatedAt @map("updated_at")
+
+    employee          Employee          @relation(fields: [employeeId], references: [id])
+    expenseType       ExpenseType       @relation(fields: [expenseTypeId], references: [id])
+    expenseRoleConfig ExpenseRoleConfig @relation(fields: [expenseRoleConfigId], references: [id])
+    approver          Employee?         @relation("ApprovedBy", fields: [approvedBy], references: [id])
+
+    @@map("expense_claims")
+}
+
+// SAMPLE MODULE
+model Gift {
+    id             String  @id @default(uuid())
+    name           String  @db.VarChar(200)
+    description    String? @db.Text
+    unitCost       Decimal @map("unit_cost") @db.Decimal(10, 2)
+    specifications Json? // Gift specifications (JSONB)
+    giftImages     Json?   @map("gift_images") // image URLs + metadata JSON
+
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+    createdById String   @map("created_by")
+    createdBy   Employee @relation("GiftCreatedBy", fields: [createdById], references: [id])
+    isActive    Boolean  @default(true) @map("is_active")
+
+    userGiftInventories UserGiftInventory[]
+    //sampleDistributionGiftItems SampleDistributionGiftItem[]
+
+    @@map("gifts")
+}
+
+model UserDrugInventory {
+    id                          String                       @id @default(uuid())
+    employeeId                  String                       @map("employee_id")
+    employee                    Employee                     @relation(fields: [employeeId], references: [id])
+    drugId                      String                       @map("drug_id")
+    drug                        Drug                         @relation(fields: [drugId], references: [id])
+    quantity                    Int
+    lastRestockedAt             DateTime?                    @map("last_restocked_date")
+    createdAt                   DateTime                     @default(now()) @map("created_at")
+    updatedAt                   DateTime                     @updatedAt @map("updated_at")
+    sampleDistributionDrugItems SampleDistributionDrugItem[]
+
+    @@map("user_drug_inventory")
+}
+
+model UserGiftInventory {
+    id                          String                       @id @default(uuid())
+    employeeId                  String                       @map("employee_id")
+    employee                    Employee                     @relation(fields: [employeeId], references: [id])
+    giftId                      String                       @map("gift_id")
+    gift                        Gift                         @relation(fields: [giftId], references: [id])
+    quantity                    Int
+    lastRestockedAt             DateTime?                    @map("last_restocked_date")
+    createdAt                   DateTime                     @default(now()) @map("created_at")
+    updatedAt                   DateTime                     @updatedAt @map("updated_at")
+    sampleDistributionGiftItems SampleDistributionGiftItem[]
+
+    @@map("user_gift_inventory")
+}
+
+model SampleDistribution {
+    id            String   @id @default(uuid())
+    doctorId      String?  @map("doctor_id")
+    doctor        Doctor?  @relation(fields: [doctorId], references: [id])
+    chemistId     String?  @map("chemist_id")
+    chemist       Chemist? @relation(fields: [chemistId], references: [id])
+    employeeId    String   @map("employee_id") // medical rep who created
+    employee      Employee @relation(fields: [employeeId], references: [id])
+    distributedAt DateTime @map("distributed_at")
+    // notes               String?           @db.Text
+    createdAt     DateTime @default(now()) @map("created_at")
+    updatedAt     DateTime @updatedAt @map("updated_at")
+
+    drugItems SampleDistributionDrugItem[]
+    giftItems SampleDistributionGiftItem[]
+
+    @@map("sample_distributions")
+}
+
+model SampleDistributionDrugItem {
+    id                   String             @id @default(uuid())
+    sampleDistributionId String             @map("sample_distribution_id")
+    sampleDistribution   SampleDistribution @relation(fields: [sampleDistributionId], references: [id])
+    // drugId               String             @map("drug_id")
+    // drug                 Drug               @relation(fields: [drugId], references: [id])
+    fromInventoryId      String             @map("from_inventory_id")
+    fromInventory        UserDrugInventory  @relation(fields: [fromInventoryId], references: [id])
+    quantity             Int
+    unitCost             Decimal            @map("unit_cost") @db.Decimal(10, 2)
+    totalCost            Decimal            @map("total_cost") @db.Decimal(10, 2)
+    createdAt            DateTime           @default(now()) @map("created_at")
+    updatedAt            DateTime           @updatedAt @map("updated_at")
+
+    @@map("sample_distribution_drug_items")
+}
+
+model SampleDistributionGiftItem {
+    id                   String             @id @default(uuid())
+    sampleDistributionId String             @map("sample_distribution_id")
+    sampleDistribution   SampleDistribution @relation(fields: [sampleDistributionId], references: [id])
+    // giftId               String             @map("gift_id")
+    // gift                 Gift               @relation(fields: [giftId], references: [id])
+    fromInventoryId      String             @map("from_inventory_id")
+    fromInventory        UserGiftInventory  @relation(fields: [fromInventoryId], references: [id])
+    quantity             Int
+    unitCost             Decimal            @map("unit_cost") @db.Decimal(10, 2)
+    totalCost            Decimal            @map("total_cost") @db.Decimal(10, 2)
+    createdAt            DateTime           @default(now()) @map("created_at")
+    updatedAt            DateTime           @updatedAt @map("updated_at")
+
+    @@map("sample_distribution_gift_items")
+}
+
+// AUDIT TRAIL
+model AuditLog {
+    id             String    @id @default(uuid())
+    organizationId String    @map("organization_id")
+    // organization   Organization @relation(fields: [organizationId], references: [id])
+    employeeId     String?   @map("employee_id")
+    employee       Employee? @relation(fields: [employeeId], references: [id])
+
+    tableName  String @map("table_name") @db.VarChar(100)
+    actionType String @map("action_type") @db.VarChar(50) // INSERT, UPDATE, DELETE
+    recordId   String @map("record_id")
+    oldValues  Json?  @map("old_values") @db.JsonB
+    newValues  Json?  @map("new_values") @db.JsonB
+
+    ipAddress String? @map("ip_address") @db.VarChar(45)
+    // userAgent      String?  @map("user_agent") @db.Text
+
+    createdAt DateTime @default(now()) @map("created_at")
+
+    @@map("audit_logs")
+}
