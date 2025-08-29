@@ -13,20 +13,27 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "outDir": "./dist",
-    "rootDir": "./src",
-    "baseUrl": "./src",
+    "rootDir": "./",
+    "baseUrl": "./",
     "paths": {
       "@/*": [
-        "*"
+        "src/*"
       ]
-    }
+    },
+    "types": [
+      "node"
+    ]
   },
   "include": [
+    "main.ts",
     "src/**/*"
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "generated",
+    "prisma-shared",
+    "prisma-tenant"
   ],
   "ts-node": {
     "esm": true,

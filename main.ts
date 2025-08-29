@@ -1,32 +1,32 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import SchemaManagementService from './src/services/SchemaManagementService.ts';
-import organizationRoutes from './src/routes/organizationRoutes.ts'
-import authRoutes from './src/routes/authRoutes.ts'
-import doctorRoutes from './src/routes/doctorRoutes.ts'
-import chemistRoutes from './src/routes/chemistRoutes.ts'
-import { cleanupMiddleware } from './src/middlewares/tenantMiddleware.ts';
-import orderRoutes from './src/routes/orderRoutes.ts';
-import drugRoutes from './src/routes/drugRoutes.ts'
-import rcpaRoutes from './src/routes/rcpaRoutes.ts';
-import dcrRoutes from './src/routes/dcrRoutes.ts'
-import sampleRoutes from './src/routes/sampleRoutes.ts'; // NEW SAMPLE ROUTES
-import taskPlannerRoutes from './src/routes/taskPlannerRoutes.ts'
-import taskRoutes from './src/routes/taskRoutes.ts'
-import tourPlanRoutes from './src/routes/tourPlanRoutes.ts'
+import SchemaManagementService from './src/services/SchemaManagementService.js';
+import organizationRoutes from './src/routes/organizationRoutes.js';
+import authRoutes from './src/routes/authRoutes.js';
+import doctorRoutes from './src/routes/doctorRoutes.js';
+import chemistRoutes from './src/routes/chemistRoutes.js';
+import { cleanupMiddleware } from './src/middlewares/tenantMiddleware.js';
+import orderRoutes from './src/routes/orderRoutes.js';
+import drugRoutes from './src/routes/drugRoutes.js';
+import rcpaRoutes from './src/routes/rcpaRoutes.js';
+import dcrRoutes from './src/routes/dcrRoutes.js';
+import sampleRoutes from './src/routes/sampleRoutes.js';
+import taskPlannerRoutes from './src/routes/taskPlannerRoutes.js';
+import taskRoutes from './src/routes/taskRoutes.js';
+import tourPlanRoutes from './src/routes/tourPlanRoutes.js';
 
 dotenv.config();
 
 const app = express();
 const schemaService = SchemaManagementService.getInstance();
+
 app.use(cors({
   origin: '*', // In production, specify your app's URL
   credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-const PORT = process.env.PORT || 3000;
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -68,7 +68,7 @@ app.use('/api/rcpa', rcpaRoutes);
 // DCR Routes
 app.use('/api/dcr', dcrRoutes);
 
-// Sample Routes (NEW)
+// Sample Routes
 app.use('/api/samples', sampleRoutes);
 
 // Task Planner Routes
@@ -78,7 +78,7 @@ app.use('/api/taskPlanners', taskPlannerRoutes);
 app.use('/api/tasks', taskRoutes);
 
 // Tour Plan Routes
-app.use('/api/tourPlan', tourPlanRoutes)
+app.use('/api/tourPlan', tourPlanRoutes);
 
 // 404 Not Found handler
 app.use((req, res) => {
@@ -111,11 +111,12 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-// Start the HTTP server
+// Use dynamic port from environment variable
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
-const server = app.listen(3000, '0.0.0.0', () => {
-  console.log('Server running on 192.168.24.215:3000');
+// Fix: Use the port variable instead of hardcoded 3000
+const server = app.listen(port, '0.0.0.0', () => {
+  console.log(`Server running on port ${port}`);
 });
 
 // Graceful shutdown procedures
@@ -129,7 +130,7 @@ const gracefulShutdown = async (signal: string) => {
       console.log('Database connections closed.');
       process.exit(0);
     } catch (error) {
-      console.error('❌ Error during graceful shutdown:', error);
+      console.error('Error during graceful shutdown:', error);
       process.exit(1);
     }
   });
@@ -137,3 +138,6 @@ const gracefulShutdown = async (signal: string) => {
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Export app for potential testing or monorepo use
+export default app;
