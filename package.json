@@ -16,7 +16,7 @@
     "prisma:generate:tenant": "prisma generate --schema=./prisma-tenant/schema.prisma",
     "prisma:sql:tenant": "prisma migrate diff --from-empty --to-schema-datamodel ./prisma-tenant/schema.prisma --script > ./tenant-migrations/schema.sql",
     "postinstall": "npm run prisma:generate && npm run prisma:sql:tenant",
-    "heroku-postbuild": "npm run build && npm run prisma:generate && npm run prisma:sql:tenant",
+    "heroku-postbuild": "npm run build && npm run prisma:generate && npm run prisma:sql:tenant && cp -r generated dist/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
