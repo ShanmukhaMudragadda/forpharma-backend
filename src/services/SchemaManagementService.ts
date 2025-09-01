@@ -120,7 +120,8 @@ class SchemaManagementService {
       );
 
       // 2. Grant permissions
-      const dbUser = process.env.DB_USER || 'postgres';
+      const databaseUrl = process.env.DATABASE_URL || '';
+      const dbUser = databaseUrl.split('@')[0].split('//')[1].split(':')[0] || 'u78djq1g38m7im';
       await this.sharedDb.$executeRawUnsafe(
         `GRANT ALL ON SCHEMA "${schemaName}" TO "${dbUser}"`
       );
