@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import nodemailer from 'nodemailer';
-import { EmailHelper } from '../utils/emailHelper';
+import { EmailHelper } from '../utils/emailHelper.js';
 import SchemaManagementService from '../services/SchemaManagementService.js';
 import juice from 'juice';
 
