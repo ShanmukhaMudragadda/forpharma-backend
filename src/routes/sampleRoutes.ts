@@ -1,9 +1,9 @@
 import express from 'express';
-import tenantMiddleware from '../middlewares/tenantMiddleware';
-import { getDrugInventory, getGiftInventory } from '../controllers/samples/getInventoryController';
-import { getCustomers, createDistribution } from '../controllers/samples/createDistributionController';
-import { getDistributions } from '../controllers/samples/getDistributionsController';
-import { getDistributionDetails } from '../controllers/samples/getDistributionDetailsController';
+import tenantMiddleware from '../middlewares/tenantMiddleware.js';
+import { getDrugInventory, getGiftInventory } from '../controllers/samples/getInventoryController.js';
+import { getCustomers, createDistribution } from '../controllers/samples/createDistributionController.js';
+import { getDistributions } from '../controllers/samples/getDistributionsController.js';
+import { getDistributionDetails } from '../controllers/samples/getDistributionDetailsController.js';
 
 const router = express.Router();
 

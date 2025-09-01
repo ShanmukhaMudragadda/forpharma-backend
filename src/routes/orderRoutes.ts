@@ -1,11 +1,11 @@
 import express from 'express';
-import tenantMiddleware from '../middlewares/tenantMiddleware';
-import { createOrder } from '../controllers/orders/createOrderController';
-import { getOrderList } from '../controllers/orders/getOrderListController';
-import { getOrderDetails } from '../controllers/orders/getOrderDetailsController';
-import { updateOrder } from '../controllers/orders/updateOrderController';
-import { deleteOrder } from '../controllers/orders/deleteOrderController';
-import { getDrugsForOrder } from '../controllers/orders/getDrugsForOrderController';
+import tenantMiddleware from '../middlewares/tenantMiddleware.js';
+import { createOrder } from '../controllers/orders/createOrderController.js';
+import { getOrderList } from '../controllers/orders/getOrderListController.js';
+import { getOrderDetails } from '../controllers/orders/getOrderDetailsController.js';
+import { updateOrder } from '../controllers/orders/updateOrderController.js';
+import { deleteOrder } from '../controllers/orders/deleteOrderController.js';
+import { getDrugsForOrder } from '../controllers/orders/getDrugsForOrderController.js';
 
 const router = express.Router();
 

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { onboardNewOrganization } from '../scripts/onboardOrganization';
+import { onboardNewOrganization } from '../scripts/onboardOrganization.js';
 
 /**
  * Factory function that returns the Express middleware for creating organizations.

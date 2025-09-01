@@ -1,4 +1,4 @@
-import SchemaManagementService from '../services/SchemaManagementService';
+import SchemaManagementService from '../services/SchemaManagementService.js';
 import bcrypt from 'bcrypt';
 
 interface OrganizationData {

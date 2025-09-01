@@ -1,10 +1,10 @@
 import express from 'express';
-import tenantMiddleware from '../middlewares/tenantMiddleware';
-import { createDcr, getTasksForDcr } from '../controllers/dcr/createDcrController';
-import { getDcrList } from '../controllers/dcr/getDcrListController';
-import { getDcrDetails } from '../controllers/dcr/getDcrDetailsController';
-import { updateDcr } from '../controllers/dcr/updateDcrController';
-import { deleteDcr } from '../controllers/dcr/deleteDcrController';
+import tenantMiddleware from '../middlewares/tenantMiddleware.js';
+import { createDcr, getTasksForDcr } from '../controllers/dcr/createDcrController.js';
+import { getDcrList } from '../controllers/dcr/getDcrListController.js';
+import { getDcrDetails } from '../controllers/dcr/getDcrDetailsController.js';
+import { updateDcr } from '../controllers/dcr/updateDcrController.js';
+import { deleteDcr } from '../controllers/dcr/deleteDcrController.js';
 
 const router = express.Router();
 

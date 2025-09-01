@@ -1,10 +1,10 @@
 import express from 'express';
-import tenantMiddleware from '../middlewares/tenantMiddleware';
-import { createRcpa, getDrugsForRcpa } from '../controllers/rcpa/createRcpaController';
-import { getRcpaList } from '../controllers/rcpa/getRcpaListController';
-import { getRcpaDetails } from '../controllers/rcpa/getRcpaDetailsController';
-import { updateRcpa } from '../controllers/rcpa/updateRcpaController';
-import { deleteRcpa } from '../controllers/rcpa/deleteRcpaController';
+import tenantMiddleware from '../middlewares/tenantMiddleware.js';
+import { createRcpa, getDrugsForRcpa } from '../controllers/rcpa/createRcpaController.js';
+import { getRcpaList } from '../controllers/rcpa/getRcpaListController.js';
+import { getRcpaDetails } from '../controllers/rcpa/getRcpaDetailsController.js';
+import { updateRcpa } from '../controllers/rcpa/updateRcpaController.js';
+import { deleteRcpa } from '../controllers/rcpa/deleteRcpaController.js';
 
 const router = express.Router();
 

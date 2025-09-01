@@ -1,7 +1,7 @@
 import express from 'express'
-import tenantMiddleware from '@/middlewares/tenantMiddleware'
-import { createTourPlanController } from '@/controllers/tourPlan/createTourPlanController';
-import { getTourPlansController } from '@/controllers/tourPlan/getTourPlanController';
+import tenantMiddleware from '@/middlewares/tenantMiddleware.js'
+import { createTourPlanController } from '@/controllers/tourPlan/createTourPlanController.js';
+import { getTourPlansController } from '@/controllers/tourPlan/getTourPlanController.js';
 
 
 const router = express.Router();

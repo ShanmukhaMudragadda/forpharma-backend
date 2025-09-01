@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import nodemailer from 'nodemailer';
 import { EmailHelper } from '../utils/emailHelper';
-import SchemaManagementService from '../services/SchemaManagementService';
+import SchemaManagementService from '../services/SchemaManagementService.js';
 import juice from 'juice';
 
 

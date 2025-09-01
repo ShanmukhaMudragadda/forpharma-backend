@@ -1,6 +1,6 @@
 import express from 'express';
-import SchemaManagementService from '../services/SchemaManagementService';
-import { createOrganizationController } from '../controllers/organizationController';
+import SchemaManagementService from '../services/SchemaManagementService.js';
+import { createOrganizationController } from '../controllers/organizationController.js';
 
 const router = express.Router();
 const schemaService = SchemaManagementService.getInstance();

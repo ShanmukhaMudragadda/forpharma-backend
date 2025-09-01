@@ -1,4 +1,4 @@
-import SchemaManagementService from '../services/SchemaManagementService';
+import SchemaManagementService from '../services/SchemaManagementService.js';
 import { PrismaClient as SharedPrismaClient } from '../../generated/prisma-shared/index.js';
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';

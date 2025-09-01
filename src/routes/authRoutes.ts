@@ -1,7 +1,7 @@
 import express from 'express';
-import SchemaManagementService from '../services/SchemaManagementService';
-import { loginController, createUserController, googleLoginController, activateAccountController, fetchUsersController } from '../controllers/authController'
-import { upload } from '../middlewares/multerConfig';
+import SchemaManagementService from '../services/SchemaManagementService.js';
+import { loginController, createUserController, googleLoginController, activateAccountController, fetchUsersController } from '../controllers/authController.js'
+import { upload } from '../middlewares/multerConfig.js';
 
 const router = express.Router();
 const schemaService = SchemaManagementService.getInstance();

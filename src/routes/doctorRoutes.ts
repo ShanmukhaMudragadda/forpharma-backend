@@ -1,12 +1,12 @@
 import express from 'express';
-import SchemaManagementService from '../services/SchemaManagementService';
+import SchemaManagementService from '../services/SchemaManagementService.js';
 import {
     createDoctorController,
     getDoctorListController,
     updateDoctor,
     deleteDoctor,
     getDoctorDetails,
-} from '../controllers/doctors/doctorController'
+} from '../controllers/doctors/doctorController.js'
 import {
     // DoctorHospitalAssociation
     createDoctorHospitalAssociation,
@@ -14,7 +14,7 @@ import {
     updateDoctorHospitalAssociation,
     deleteDoctorHospitalAssociation,
     setPrimaryHospital,
-} from '../controllers/doctors/doctorHospitalAssociation'
+} from '../controllers/doctors/doctorHospitalAssociation.js'
 
 import {
     // DoctorConsultationSchedule
@@ -23,7 +23,7 @@ import {
     updateDoctorConsultationSchedule,
     deleteDoctorConsultationSchedule,
     toggleScheduleStatus,
-} from '../controllers/doctors/doctorConsultationController'
+} from '../controllers/doctors/doctorConsultationController.js'
 
 import {
     // DoctorNote
@@ -32,7 +32,7 @@ import {
     getNotesByEmployee,
     updateDoctorNote,
     deleteDoctorNote,
-} from '../controllers/doctors/doctorNoteController'
+} from '../controllers/doctors/doctorNoteController.js'
 import {
     // DoctorInteraction
     createDoctorInteraction,
@@ -40,8 +40,8 @@ import {
     getInteractionsByEmployee,
     updateDoctorInteraction,
     deleteDoctorInteraction
-} from '../controllers/doctors/doctorIntreactionController'
-import tenantMiddleware from '../middlewares/tenantMiddleware';
+} from '../controllers/doctors/doctorIntreactionController.js'
+import tenantMiddleware from '../middlewares/tenantMiddleware.js';
 
 const router = express.Router();
 const schemaService = SchemaManagementService.getInstance();
