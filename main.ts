@@ -1,3 +1,6 @@
+(global as any).File = class File {
+  constructor(public bits: any[], public name: string, public options?: any) { }
+};
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
