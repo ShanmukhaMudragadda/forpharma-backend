@@ -5,14 +5,15 @@ import { faker } from '@faker-js/faker';
 
 // Environment-aware Prisma client initialization
 const getDatabaseUrl = (type: 'shared' | 'tenant') => {
-    if (process.env.NODE_ENV === 'production') {
-        // Use Heroku's DATABASE_URL environment variable
-        return process.env.DATABASE_URL;
+    const baseUrl = process.env.DATABASE_URL;
+
+    if (type === 'tenant') {
+        // Append schema parameter for tenant
+        return `${baseUrl}?schema=org_forsys_inc_1756708273231`;
+    } else {
+        // Use public schema for shared
+        return `${baseUrl}?schema=public`;
     }
-    // Local development URLs
-    return type === 'shared'
-        ? process.env.SHARED_DATABASE_URL
-        : process.env.TENANT_DATABASE_URL;
 };
 
 // Initialize Prisma clients with production-safe configuration
