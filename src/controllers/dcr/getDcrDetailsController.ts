@@ -33,7 +33,7 @@ export const getDcrDetails = async (req: AuthenticatedRequest, res: Response): P
         const dcr = await req.tenantDb.dcrReport.findFirst({
             where: {
                 id: dcrId,
-                employeeId: req.user?.employeeId // Ensure user can only access their own DCR
+                employeeId: req.user?.id // Ensure user can only access their own DCR
             },
             include: {
                 employee: {

@@ -19,7 +19,7 @@ interface AuthenticatedRequest extends Request {
  */
 export const getRcpaList = async (req: AuthenticatedRequest, res: Response) => {
     try {
-        console.log('📋 Getting RCPA reports for employee:', req.user?.employeeId);
+        console.log('📋 Getting RCPA reports for employee:', req.user?.id);
 
         if (!req.tenantDb) {
             return res.status(500).json({
@@ -30,7 +30,7 @@ export const getRcpaList = async (req: AuthenticatedRequest, res: Response) => {
 
         const rcpaReports = await req.tenantDb.rcpaReport.findMany({
             where: {
-                employeeId: req.user?.employeeId
+                employeeId: req.user?.id
             },
             include: {
                 chemist: {

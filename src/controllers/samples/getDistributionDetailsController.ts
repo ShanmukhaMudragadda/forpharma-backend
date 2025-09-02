@@ -82,7 +82,7 @@ export const getDistributionDetails = async (req: AuthenticatedRequest, res: Res
         const distribution = await req.tenantDb.sampleDistribution.findUnique({
             where: {
                 id: distributionId,
-                employeeId: req.user?.employeeId // Ensure user can only access their distributions
+                employeeId: req.user?.id // Ensure user can only access their distributions
             },
             include: {
                 doctor: {

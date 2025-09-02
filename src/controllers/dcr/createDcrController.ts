@@ -28,7 +28,7 @@ interface TaskDetail {
  */
 export const getTasksForDcr = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-        console.log('📋 Getting available tasks for DCR creation:', req.user?.employeeId);
+        console.log('📋 Getting available tasks for DCR creation:', req.user?.id);
 
         if (!req.tenantDb) {
             res.status(500).json({
@@ -43,7 +43,7 @@ export const getTasksForDcr = async (req: AuthenticatedRequest, res: Response): 
         // Get existing DCR task IDs to exclude tasks that already have DCR reports
         const existingDCRs = await req.tenantDb.dcrReport.findMany({
             where: {
-                employeeId: req.user?.employeeId
+                employeeId: req.user?.id
             },
             select: {
                 taskId: true,
@@ -69,7 +69,7 @@ export const getTasksForDcr = async (req: AuthenticatedRequest, res: Response): 
         // Get Doctor Tasks (COMPLETED and RESCHEDULED status, without existing DCR)
         const doctorTasks = await req.tenantDb.doctorTask.findMany({
             where: {
-                employeeId: req.user?.employeeId,
+                employeeId: req.user?.id,
                 completionStatus: {
                     in: ['COMPLETED', 'RESCHEDULED']
                 },
@@ -133,7 +133,7 @@ export const getTasksForDcr = async (req: AuthenticatedRequest, res: Response): 
         // Get Chemist Tasks (COMPLETED and RESCHEDULED status, without existing DCR)
         const chemistTasks = await req.tenantDb.chemistTask.findMany({
             where: {
-                employeeId: req.user?.employeeId,
+                employeeId: req.user?.id,
                 completionStatus: {
                     in: ['COMPLETED', 'RESCHEDULED']
                 },
@@ -184,7 +184,7 @@ export const getTasksForDcr = async (req: AuthenticatedRequest, res: Response): 
         // Get Tour Plan Tasks (COMPLETED and RESCHEDULED status, without existing DCR)
         const tourPlanTasks = await req.tenantDb.tourPlanTask.findMany({
             where: {
-                employeeId: req.user?.employeeId,
+                employeeId: req.user?.id,
                 completionStatus: {
                     in: ['COMPLETED', 'RESCHEDULED']
                 },
@@ -258,7 +258,7 @@ export const getTasksForDcr = async (req: AuthenticatedRequest, res: Response): 
 export const createDcr = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
         const dcrData = req.body;
-        console.log('📝 Creating new DCR for employee:', req.user?.employeeId);
+        console.log('📝 Creating new DCR for employee:', req.user?.id);
 
         if (!req.tenantDb) {
             res.status(500).json({
@@ -294,7 +294,7 @@ export const createDcr = async (req: AuthenticatedRequest, res: Response): Promi
             const task = await req.tenantDb.doctorTask.findFirst({
                 where: {
                     id: dcrData.taskId,
-                    employeeId: req.user?.employeeId
+                    employeeId: req.user?.id
                 }
             });
             if (task) {
@@ -305,7 +305,7 @@ export const createDcr = async (req: AuthenticatedRequest, res: Response): Promi
             const task = await req.tenantDb.chemistTask.findFirst({
                 where: {
                     id: dcrData.taskId,
-                    employeeId: req.user?.employeeId
+                    employeeId: req.user?.id
                 }
             });
             if (task) {
@@ -316,7 +316,7 @@ export const createDcr = async (req: AuthenticatedRequest, res: Response): Promi
             const task = await req.tenantDb.tourPlanTask.findFirst({
                 where: {
                     id: dcrData.taskId,
-                    employeeId: req.user?.employeeId
+                    employeeId: req.user?.id
                 }
             });
             if (task) {
@@ -338,7 +338,7 @@ export const createDcr = async (req: AuthenticatedRequest, res: Response): Promi
             where: {
                 taskId: dcrData.taskId,
                 taskType: dcrData.taskType,
-                employeeId: req.user?.employeeId
+                employeeId: req.user?.id
             }
         });
 
@@ -354,7 +354,7 @@ export const createDcr = async (req: AuthenticatedRequest, res: Response): Promi
         const dcrReport = await req.tenantDb.dcrReport.create({
             data: {
                 organizationId: req.user?.organizationId,
-                employeeId: req.user?.employeeId,
+                employeeId: req.user?.id,
                 taskId: dcrData.taskId,
                 taskType: dcrData.taskType,
                 reportDate: taskDate,

@@ -34,7 +34,7 @@ interface AuthenticatedRequest extends Request {
  */
 export const getCustomers = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-        console.log('👥 Getting customers for employee:', req.user?.employeeId);
+        console.log('👥 Getting customers for employee:', req.user?.id);
 
         if (!req.tenantDb) {
             res.status(500).json({
@@ -47,7 +47,7 @@ export const getCustomers = async (req: AuthenticatedRequest, res: Response): Pr
         // Get employee's territories
         const employeeTerritories = await req.tenantDb.employeeTerritory.findMany({
             where: {
-                employeeId: req.user?.employeeId
+                employeeId: req.user?.id
             },
             select: {
                 territoryId: true
@@ -174,7 +174,7 @@ export const getCustomers = async (req: AuthenticatedRequest, res: Response): Pr
  */
 export const createDistribution = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-        console.log('📦 Creating new distribution for employee:', req.user?.employeeId);
+        console.log('📦 Creating new distribution for employee:', req.user?.id);
 
         if (!req.tenantDb) {
             res.status(500).json({
@@ -229,7 +229,7 @@ export const createDistribution = async (req: AuthenticatedRequest, res: Respons
                 data: {
                     doctorId: customerType === 'doctor' ? customerId : null,
                     chemistId: customerType === 'chemist' ? customerId : null,
-                    employeeId: req.user?.employeeId,
+                    employeeId: req.user?.id,
                     distributedAt: new Date(distributedAt)
                 }
             });

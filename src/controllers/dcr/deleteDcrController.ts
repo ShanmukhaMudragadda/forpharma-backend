@@ -34,7 +34,7 @@ export const deleteDcr = async (req: AuthenticatedRequest, res: Response): Promi
         const existingDCR = await req.tenantDb.dcrReport.findFirst({
             where: {
                 id: dcrId,
-                employeeId: req.user?.employeeId
+                employeeId: req.user?.id
             }
         });
 

@@ -32,7 +32,7 @@ export const deleteOrder = async (req: AuthenticatedRequest, res: Response) => {
         const existingOrder = await req.tenantDb.order.findFirst({
             where: {
                 id: orderId,
-                createdById: req.user?.employeeId
+                createdById: req.user?.id
             },
             include: {
                 chemist: {

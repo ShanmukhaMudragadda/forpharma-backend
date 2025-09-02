@@ -21,7 +21,7 @@ export const updateDcr = async (req: AuthenticatedRequest, res: Response): Promi
     try {
         const { dcrId } = req.params;
         const updateData = req.body;
-        console.log('🔄 Updating DCR:', dcrId, 'for employee:', req.user?.employeeId);
+        console.log('🔄 Updating DCR:', dcrId, 'for employee:', req.user?.id);
 
         if (!req.tenantDb) {
             res.status(500).json({
@@ -35,7 +35,7 @@ export const updateDcr = async (req: AuthenticatedRequest, res: Response): Promi
         const existingDCR = await req.tenantDb.dcrReport.findFirst({
             where: {
                 id: dcrId,
-                employeeId: req.user?.employeeId
+                employeeId: req.user?.id
             }
         });
 

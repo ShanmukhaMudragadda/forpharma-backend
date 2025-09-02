@@ -33,7 +33,7 @@ export const deleteRcpa = async (req: AuthenticatedRequest, res: Response) => {
         const existingReport = await req.tenantDb.rcpaReport.findFirst({
             where: {
                 id: rcpaId,
-                employeeId: req.user?.employeeId
+                employeeId: req.user?.id
             },
             include: {
                 chemist: {

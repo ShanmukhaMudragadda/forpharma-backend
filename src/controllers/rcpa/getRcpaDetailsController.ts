@@ -32,7 +32,7 @@ export const getRcpaDetails = async (req: AuthenticatedRequest, res: Response) =
         const rcpaReport = await req.tenantDb.rcpaReport.findFirst({
             where: {
                 id: rcpaId,
-                employeeId: req.user?.employeeId // Ensure user can only access their own reports
+                employeeId: req.user?.id // Ensure user can only access their own reports
             },
             include: {
                 chemist: {

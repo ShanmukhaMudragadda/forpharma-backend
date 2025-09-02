@@ -42,7 +42,7 @@ const getGiftImage = (giftImages: any): string => {
  */
 export const getDrugInventory = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-        console.log('💊 Getting drug inventory for employee:', req.user?.employeeId);
+        console.log('💊 Getting drug inventory for employee:', req.user?.id);
 
         if (!req.tenantDb) {
             res.status(500).json({
@@ -54,7 +54,7 @@ export const getDrugInventory = async (req: AuthenticatedRequest, res: Response)
 
         const drugInventory = await req.tenantDb.userDrugInventory.findMany({
             where: {
-                employeeId: req.user?.employeeId
+                employeeId: req.user?.id
             },
             include: {
                 drug: {
@@ -129,7 +129,7 @@ export const getDrugInventory = async (req: AuthenticatedRequest, res: Response)
  */
 export const getGiftInventory = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-        console.log('🎁 Getting gift inventory for employee:', req.user?.employeeId);
+        console.log('🎁 Getting gift inventory for employee:', req.user?.id);
 
         if (!req.tenantDb) {
             res.status(500).json({
@@ -141,7 +141,7 @@ export const getGiftInventory = async (req: AuthenticatedRequest, res: Response)
 
         const giftInventory = await req.tenantDb.userGiftInventory.findMany({
             where: {
-                employeeId: req.user?.employeeId
+                employeeId: req.user?.id
             },
             include: {
                 gift: {

@@ -27,7 +27,7 @@ interface DCRListItem {
  */
 export const getDcrList = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-        console.log('📋 Getting DCR reports for employee:', req.user?.employeeId);
+        console.log('📋 Getting DCR reports for employee:', req.user?.id);
 
         if (!req.tenantDb) {
             res.status(500).json({
@@ -42,7 +42,7 @@ export const getDcrList = async (req: AuthenticatedRequest, res: Response): Prom
 
         // Build where clause for DCR reports
         let whereClause: any = {
-            employeeId: req.user?.employeeId
+            employeeId: req.user?.id
         };
 
         // Apply date filter if provided

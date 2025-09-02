@@ -101,7 +101,7 @@ export const updateOrder = async (req: AuthenticatedRequest, res: Response) => {
         const existingOrder = await req.tenantDb.order.findFirst({
             where: {
                 id: orderId,
-                createdById: req.user?.employeeId
+                createdById: req.user?.id
             }
         });
 

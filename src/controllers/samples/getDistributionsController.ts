@@ -41,7 +41,7 @@ const formatDate = (date: Date): string => {
  */
 export const getDistributions = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-        console.log('📦 Getting distributions for employee:', req.user?.employeeId);
+        console.log('📦 Getting distributions for employee:', req.user?.id);
 
         if (!req.tenantDb) {
             res.status(500).json({
@@ -53,7 +53,7 @@ export const getDistributions = async (req: AuthenticatedRequest, res: Response)
 
         const distributions = await req.tenantDb.sampleDistribution.findMany({
             where: {
-                employeeId: req.user?.employeeId
+                employeeId: req.user?.id
             },
             include: {
                 doctor: {

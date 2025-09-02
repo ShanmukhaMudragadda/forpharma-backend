@@ -31,7 +31,7 @@ export const getOrderDetails = async (req: AuthenticatedRequest, res: Response) 
         const order = await req.tenantDb.order.findFirst({
             where: {
                 id: orderId,
-                createdById: req.user?.employeeId // Ensure user can only access their own orders
+                createdById: req.user?.id // Ensure user can only access their own orders
             },
             include: {
                 chemist: {

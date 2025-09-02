@@ -87,7 +87,7 @@ const parseDate = (dateString: string): Date | null => {
 export const createOrder = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const orderData = req.body;
-        console.log('📝 Creating new order for employee:', req.user?.employeeId);
+        console.log('📝 Creating new order for employee:', req.user?.id);
         console.log('📝 Received order data:', JSON.stringify(orderData, null, 2));
 
         if (!req.tenantDb) {
@@ -203,7 +203,7 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response) => {
                     orderDate: orderDate,
                     deliveryDate: deliveryDate,
                     specialInstructions: orderData.specialInstructions || null,
-                    createdById: req.user?.employeeId
+                    createdById: req.user?.id
                 }
             });
 

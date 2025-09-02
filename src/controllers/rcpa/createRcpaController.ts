@@ -162,7 +162,7 @@ export const getDrugsForRcpa = async (req: AuthenticatedRequest, res: Response) 
 export const createRcpa = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const rcpaData = req.body;
-        console.log('📝 Creating new RCPA report for employee:', req.user?.employeeId);
+        console.log('📝 Creating new RCPA report for employee:', req.user?.id);
         console.log('📝 Received RCPA data:', JSON.stringify(rcpaData, null, 2));
 
         if (!req.tenantDb) {
@@ -292,7 +292,7 @@ export const createRcpa = async (req: AuthenticatedRequest, res: Response) => {
             const rcpaReport = await tx.rcpaReport.create({
                 data: {
                     organizationId: req.user?.organizationId,
-                    employeeId: req.user?.employeeId,
+                    employeeId: req.user?.id,
                     chemistId: rcpaData.chemistId,
                     reportingPeriod: rcpaData.reportingPeriod,
                     startDate: startDate,

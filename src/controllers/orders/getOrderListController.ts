@@ -18,7 +18,7 @@ interface AuthenticatedRequest extends Request {
  */
 export const getOrderList = async (req: AuthenticatedRequest, res: Response) => {
     try {
-        console.log('📋 Getting orders for employee:', req.user?.employeeId);
+        console.log('📋 Getting orders for employee:', req.user?.id);
 
         if (!req.tenantDb) {
             return res.status(500).json({
@@ -29,7 +29,7 @@ export const getOrderList = async (req: AuthenticatedRequest, res: Response) => 
 
         const orders = await req.tenantDb.order.findMany({
             where: {
-                createdById: req.user?.employeeId
+                createdById: req.user?.id
             },
             include: {
                 chemist: {
