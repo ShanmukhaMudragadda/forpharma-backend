@@ -51,6 +51,7 @@ app.use('/api/organizations', organizationRoutes);
 
 // Auth routes
 app.use('/api/user', authRoutes);
+app.use('/api/direct_user', authRoutes);
 
 // Doctor Routes
 app.use('/api/doctors', doctorRoutes);
