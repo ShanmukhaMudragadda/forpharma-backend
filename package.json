@@ -5,6 +5,7 @@
   "main": "dist/main.js",
   "scripts": {
     "start": "node dist/main.js",
+    "seed:prod": "npx tsx seed.ts",
     "dev": "tsx watch main.ts",
     "dev:nodemon": "nodemon",
     "build": "tsc && tsc-alias",
