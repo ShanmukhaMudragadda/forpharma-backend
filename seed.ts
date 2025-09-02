@@ -48,7 +48,7 @@ const getRandomElements = <T>(array: T[], count: number): T[] => {
 };
 
 // Constants
-const ADMIN_EMAIL = 'ravi.meena@forsysinc.com';
+const ADMIN_EMAIL = 'ravi@gamil.com';
 const ADMIN_PASSWORD = '$2b$10$s14jFp7CSdmB4g9jAnO.3ed.Um040Ge0lS4lXstzy2NEpWn1fZZ7K@123';
 const ORGANIZATION_ID = 'f90a6707-e537-4174-abab-1a232afc2a13';
 
@@ -93,36 +93,6 @@ async function checkExistingData() {
     }
 }
 
-async function clearExistingData() {
-    if (process.env.FORCE_SEED === 'true') {
-        console.log('🧹 Clearing existing data...');
-
-        try {
-            // Clear tenant data first (due to foreign key constraints)
-            await tenantPrisma.$transaction(async (tx) => {
-                await tx.doctorInteraction.deleteMany();
-                await tx.chemistInteraction.deleteMany();
-                await tx.doctorNote.deleteMany();
-                await tx.chemistNote.deleteMany();
-                await tx.doctorChemistRelation.deleteMany();
-                await tx.doctorConsultationSchedule.deleteMany();
-                await tx.doctorHospitalAssociation.deleteMany();
-                await tx.employeeTerritory.deleteMany();
-                await tx.doctor.deleteMany();
-                await tx.chemist.deleteMany();
-                await tx.hospital.deleteMany();
-                await tx.territory.deleteMany();
-                await tx.hospitalChain.deleteMany();
-                await tx.chemistChain.deleteMany();
-                await tx.employee.deleteMany();
-            });
-
-            console.log('✅ Existing data cleared successfully');
-        } catch (error) {
-            console.error('⚠️  Error clearing data (may be expected if tables are empty):', error);
-        }
-    }
-}
 
 
 async function seedTenantDatabase() {
@@ -567,9 +537,6 @@ async function main() {
 
         // Check for existing data
         await checkExistingData();
-
-        // Clear existing data if forced
-        await clearExistingData();
 
         // Run migrations to ensure schema is up to date
         console.log('🔄 Ensuring database schema is up to date...');
