@@ -19,8 +19,6 @@ export const createChemistController = async (req: Request, res: Response) => {
             city,
             state,
             pincode,
-            latitude,
-            longitude,
             description,
             profilePictureUrl,
             visitingHours
@@ -91,6 +89,31 @@ export const createChemistController = async (req: Request, res: Response) => {
                     success: false,
                     message: 'Chemist chain not found'
                 });
+            }
+        }
+        let latitude = null;
+        let longitude = null;
+
+        const fullAddress = [address, city, state, pincode].filter(Boolean).join(', ');
+        if (fullAddress) {
+            try {
+                const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+                if (!apiKey) {
+                    console.warn('Google Maps API key not set');
+                } else {
+                    const fetch = (await import('node-fetch')).default;
+                    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${apiKey}`;
+                    const response = await fetch(url);
+                    const data: any = await response.json();
+                    if (data.status === 'OK' && data.results.length > 0) {
+                        latitude = data.results[0].geometry.location.lat;
+                        longitude = data.results[0].geometry.location.lng;
+                    } else {
+                        console.warn('Google Maps Geocoding API did not return results:', data.status);
+                    }
+                }
+            } catch (err) {
+                console.error('Error fetching latitude/longitude from Google Maps API:', err);
             }
         }
 
@@ -322,12 +345,75 @@ export const getChemistListController = async (req: Request, res: Response) => {
         const tenantDb = req.tenantDb;
         const userId = req.user?.id;
         const organizationId = req.user?.organizationId;
+        const role = req.user?.role;
 
         // Check if tenantDb exists
         if (!tenantDb) {
             return res.status(500).json({
                 success: false,
                 message: 'Tenant database connection not established'
+            });
+        }
+
+        // If SYSTEM_ADMINISTRATOR, fetch all chemists (active only)
+        if (role === 'SYSTEM_ADMINISTRATOR') {
+            const chemists = await tenantDb.chemist.findMany({
+                where: { isActive: true },
+                select: {
+                    id: true,
+                    name: true,
+                    type: true,
+                    isActive: true,
+                    email: true,
+                    phone: true,
+                    address: true,
+                    city: true,
+                    state: true,
+                    pincode: true,
+                    visitingHours: true,
+                    chemistChain: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
+                    territory: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    }
+                },
+                orderBy: {
+                    name: 'asc'
+                }
+            });
+            const chemistList = chemists.map((chemist: any) => ({
+                name: chemist.name || '',
+                type: chemist.type || 'CHEMIST',
+                chemistChainId: chemist.chemistChain?.id || '',
+                territoryId: chemist.territory?.id || '',
+                email: chemist.email || '',
+                phone: chemist.phone || '',
+                address: chemist.address || '',
+                city: chemist.city || '',
+                state: chemist.state || '',
+                pincode: chemist.pincode || '',
+                description: chemist.description || '',
+                profilePictureUrl: chemist.profilePictureUrl || '',
+                visitingHours: chemist.visitingHours || '',
+                status: chemist.isActive ? 'Active' : 'Inactive',
+                id: chemist.id || ''
+            }));
+            const summary = {
+                totalTerritories: null,
+                totalChemists: chemistList.length
+            };
+            return res.status(200).json({
+                success: true,
+                message: 'Chemists list retrieved successfully',
+                summary,
+                data: chemistList
             });
         }
 

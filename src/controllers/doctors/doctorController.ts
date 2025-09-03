@@ -271,12 +271,41 @@ export const getDoctorListController = async (req: Request, res: Response) => {
         // const userId = req.user?.id;
         const email = req.user?.email;
         const organizationId = req.user?.organizationId;
+        const role = req.user?.role;
 
         // Check if tenantDb exists
         if (!tenantDb) {
             return res.status(500).json({
                 success: false,
                 message: 'Tenant database connection not established'
+            });
+        }
+
+        // If SYSTEM_ADMINISTRATOR, fetch all doctors (active only)
+        if (role === 'SYSTEM_ADMINISTRATOR') {
+            const doctors = await tenantDb.doctor.findMany({
+                where: { isActive: true },
+                select: {
+                    id: true,
+                    organizationId: true,
+                    name: true,
+                    designation: true,
+                    specialization: true,
+                    email: true,
+                    phone: true,
+                    description: true,
+                    qualification: true,
+                    experienceYears: true,
+                    createdById: true,
+                    isActive: true,
+                    createdAt: true,
+                    updatedAt: true
+                }
+            });
+            return res.status(200).json({
+                success: true,
+                message: 'Doctors list retrieved successfully',
+                data: doctors
             });
         }
 

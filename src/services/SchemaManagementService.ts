@@ -104,7 +104,7 @@ class SchemaManagementService {
   }
 
   public async createOrganizationSchema(organizationId: string, organizationName: string): Promise<string> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     let schemaName: string | null = null;
 
@@ -168,7 +168,7 @@ class SchemaManagementService {
    * This is the core migration logic used by other functions.
    */
   public async applyRequiredMigrationsToSchema(schemaName: string): Promise<void> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     if (this.loadedMigrations.length === 0) {
       console.warn('⚠️ No tenant migration files loaded.');

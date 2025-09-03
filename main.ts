@@ -18,6 +18,8 @@ import sampleRoutes from './src/routes/sampleRoutes.js';
 import taskPlannerRoutes from './src/routes/taskPlannerRoutes.js';
 import taskRoutes from './src/routes/taskRoutes.js';
 import tourPlanRoutes from './src/routes/tourPlanRoutes.js';
+import hospitalRoutes from './src/routes/hospitalRoute.js';
+
 
 dotenv.config();
 
@@ -65,6 +67,7 @@ app.use('/api/orders', orderRoutes);
 // Drug Routes
 app.use('/api/drugs', drugRoutes);
 app.use('/uploads', express.static('uploads'));
+app.use('/api/hospitals', hospitalRoutes);
 
 // RCPA Routes
 app.use('/api/rcpa', rcpaRoutes);

@@ -15,14 +15,7 @@ export const createDoctorConsultationSchedule = async (req: Request, res: Respon
         const tenantDb = req.tenantDb;
         const {
             doctorId,
-            hospitalId,
-            dayOfWeek,
-            startTime,
-            endTime,
-            consultationType,
-            isActive,
-            effectiveFrom,
-            effectiveTo
+            consultations, // Array of { hospitalId, dayOfWeek, startTime, endTime, consultationType, isActive, effectiveFrom, effectiveTo }
         } = req.body;
 
         // Validation
@@ -33,10 +26,10 @@ export const createDoctorConsultationSchedule = async (req: Request, res: Respon
             });
         }
 
-        if (!doctorId || !hospitalId || !dayOfWeek || !startTime || !endTime || !consultationType) {
+        if (!doctorId || !consultations || !Array.isArray(consultations) || consultations.length === 0) {
             return res.status(400).json({
                 success: false,
-                message: 'Doctor ID, Hospital ID, day of week, start time, end time, and consultation type are required'
+                message: 'Doctor ID and consultations array are required'
             });
         }
 
@@ -52,108 +45,114 @@ export const createDoctorConsultationSchedule = async (req: Request, res: Respon
             });
         }
 
-        // Check if hospital exists
-        const hospitalExists = await tenantDb.hospital.findUnique({
-            where: { id: hospitalId }
-        });
-
-        if (!hospitalExists) {
-            return res.status(404).json({
-                success: false,
-                message: 'Hospital not found'
+        // Process each consultation in the array
+        const createdSchedules = [];
+        for (const c of consultations) {
+            const hospitalId = c.hospitalId;
+            const { dayOfWeek, startTime, endTime, consultationType, isActive, effectiveFrom, effectiveTo } = c;
+            if (!hospitalId || !dayOfWeek || !startTime || !endTime || !consultationType) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Each consultation must have hospitalId, dayOfWeek, startTime, endTime, and consultationType'
+                });
+            }
+            // Check if hospital exists
+            const hospitalExists = await tenantDb.hospital.findUnique({
+                where: { id: hospitalId }
             });
-        }
-
-        // Check if doctor is associated with the hospital
-        const doctorHospitalAssociation = await tenantDb.doctorHospitalAssociation.findUnique({
-            where: {
-                doctorId_hospitalId: {
+            if (!hospitalExists) {
+                return res.status(404).json({
+                    success: false,
+                    message: `Hospital not found for hospitalId ${hospitalId}`
+                });
+            }
+            // Check if doctor is associated with the hospital
+            const doctorHospitalAssociation = await tenantDb.doctorHospitalAssociation.findUnique({
+                where: {
+                    doctorId_hospitalId: {
+                        doctorId,
+                        hospitalId
+                    }
+                }
+            });
+            if (!doctorHospitalAssociation) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Doctor is not associated with hospitalId ${hospitalId}`
+                });
+            }
+            // Check for overlapping schedules for each consultation
+            const overlappingSchedule = await tenantDb.doctorConsultationSchedule.findFirst({
+                where: {
                     doctorId,
-                    hospitalId
+                    hospitalId,
+                    dayOfWeek,
+                    consultationType,
+                    isActive: true,
+                    OR: [
+                        {
+                            AND: [
+                                { startTime: { lte: startTime } },
+                                { endTime: { gt: startTime } }
+                            ]
+                        },
+                        {
+                            AND: [
+                                { startTime: { lt: endTime } },
+                                { endTime: { gte: endTime } }
+                            ]
+                        },
+                        {
+                            AND: [
+                                { startTime: { gte: startTime } },
+                                { endTime: { lte: endTime } }
+                            ]
+                        }
+                    ]
                 }
-            }
-        });
-
-        if (!doctorHospitalAssociation) {
-            return res.status(400).json({
-                success: false,
-                message: 'Doctor is not associated with this hospital'
             });
-        }
-
-        // Check for overlapping schedules
-        const overlappingSchedule = await tenantDb.doctorConsultationSchedule.findFirst({
-            where: {
-                doctorId,
-                hospitalId,
-                dayOfWeek,
-                consultationType,
-                isActive: true,
-                OR: [
-                    {
-                        AND: [
-                            { startTime: { lte: startTime } },
-                            { endTime: { gt: startTime } }
-                        ]
-                    },
-                    {
-                        AND: [
-                            { startTime: { lt: endTime } },
-                            { endTime: { gte: endTime } }
-                        ]
-                    },
-                    {
-                        AND: [
-                            { startTime: { gte: startTime } },
-                            { endTime: { lte: endTime } }
-                        ]
-                    }
-                ]
+            if (overlappingSchedule) {
+                return res.status(409).json({
+                    success: false,
+                    message: `Schedule overlaps for ${consultationType} on ${dayOfWeek} at hospitalId ${hospitalId}`
+                });
             }
-        });
-
-        if (overlappingSchedule) {
-            return res.status(409).json({
-                success: false,
-                message: 'Schedule overlaps with an existing schedule for this doctor'
-            });
-        }
-
-        // Create the schedule
-        const schedule = await tenantDb.doctorConsultationSchedule.create({
-            data: {
-                doctorId,
-                hospitalId,
-                dayOfWeek,
-                startTime: new Date(startTime),
-                endTime: new Date(endTime),
-                consultationType,
-                isActive: isActive !== undefined ? isActive : true,
-                effectiveFrom: effectiveFrom ? new Date(effectiveFrom) : null,
-                effectiveTo: effectiveTo ? new Date(effectiveTo) : null
-            },
-            include: {
-                doctor: {
-                    select: {
-                        id: true,
-                        name: true,
-                        specialization: true
-                    }
+            // Create schedule for each consultation
+            const schedule = await tenantDb.doctorConsultationSchedule.create({
+                data: {
+                    doctorId,
+                    hospitalId,
+                    dayOfWeek,
+                    startTime,
+                    endTime,
+                    consultationType,
+                    isActive: isActive !== undefined ? isActive : true,
+                    effectiveFrom: effectiveFrom ? new Date(startTime) : null,
+                    effectiveTo: effectiveTo ? new Date(endTime) : null
                 },
-                hospital: {
-                    select: {
-                        id: true,
-                        name: true,
-                        city: true
+                include: {
+                    doctor: {
+                        select: {
+                            id: true,
+                            name: true,
+                            specialization: true
+                        }
+                    },
+                    hospital: {
+                        select: {
+                            id: true,
+                            name: true,
+                            city: true
+                        }
                     }
                 }
-            }
-        });
-
+            });
+            createdSchedules.push(schedule);
+        }
         return res.status(201).json({
             success: true,
-            message: 'Doctor consultation schedule created successfully',
-            schedule
+            message: 'Doctor consultation schedules created successfully',
+            schedules: createdSchedules
         });
 
     } catch (error: any) {

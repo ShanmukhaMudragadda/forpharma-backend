@@ -6,14 +6,12 @@ const isValidEmail = (email: string): boolean => {
     return emailRegex.test(email);
 };
 
-
-
 // DoctorHospitalAssociation
 
 export const createDoctorHospitalAssociation = async (req: Request, res: Response) => {
     try {
         const tenantDb = req.tenantDb;
-        const { doctorId, hospitalId, department, position, isPrimary, associationStartDate, associationEndDate } = req.body;
+        const associations = req.body.associations; // Expecting an array of associations
 
         // Validation
         if (!tenantDb) {
@@ -23,109 +21,137 @@ export const createDoctorHospitalAssociation = async (req: Request, res: Respons
             });
         }
 
-        if (!doctorId || !hospitalId) {
+        if (!Array.isArray(associations) || associations.length === 0) {
             return res.status(400).json({
                 success: false,
-                message: 'Doctor ID and Hospital ID are required'
+                message: 'Associations array is required'
             });
         }
 
-        // Check if association already exists
-        const existingAssociation = await tenantDb.doctorHospitalAssociation.findUnique({
-            where: {
-                doctorId_hospitalId: {
+        const results = [];
+        for (const assoc of associations) {
+            const { doctorId, hospitalId, department, position, isPrimary, associationStartDate, associationEndDate } = assoc;
+
+            if (!doctorId || !hospitalId) {
+                results.push({
+                    success: false,
+                    message: 'Doctor ID and Hospital ID are required',
                     doctorId,
                     hospitalId
-                }
+                });
+                continue;
             }
-        });
 
-        if (existingAssociation) {
-            return res.status(409).json({
-                success: false,
-                message: 'Association already exists between this doctor and hospital'
-            });
-        }
-
-        // Check if doctor exists
-        const doctorExists = await tenantDb.doctor.findUnique({
-            where: { id: doctorId }
-        });
-
-        if (!doctorExists) {
-            return res.status(404).json({
-                success: false,
-                message: 'Doctor not found'
-            });
-        }
-
-        // Check if hospital exists
-        const hospitalExists = await tenantDb.hospital.findUnique({
-            where: { id: hospitalId }
-        });
-
-        if (!hospitalExists) {
-            return res.status(404).json({
-                success: false,
-                message: 'Hospital not found'
-            });
-        }
-
-        // If isPrimary is true, unset other primary associations for this doctor
-        if (isPrimary) {
-            await tenantDb.doctorHospitalAssociation.updateMany({
+            // Check if association already exists
+            const existingAssociation = await tenantDb.doctorHospitalAssociation.findUnique({
                 where: {
-                    doctorId,
-                    isPrimary: true
-                },
-                data: {
-                    isPrimary: false
+                    doctorId_hospitalId: {
+                        doctorId,
+                        hospitalId
+                    }
                 }
             });
-        }
 
-        // Create the association
-        const association = await tenantDb.doctorHospitalAssociation.create({
-            data: {
-                doctorId,
-                hospitalId,
-                department,
-                position,
-                isPrimary: isPrimary || false,
-                associationStartDate: associationStartDate ? new Date(associationStartDate) : null,
-                associationEndDate: associationEndDate ? new Date(associationEndDate) : null
-            },
-            include: {
-                doctor: {
-                    select: {
-                        id: true,
-                        name: true,
-                        specialization: true,
-                        email: true
+            if (existingAssociation) {
+                results.push({
+                    success: false,
+                    message: 'Association already exists between this doctor and hospital',
+                    doctorId,
+                    hospitalId
+                });
+                continue;
+            }
+
+            // Check if doctor exists
+            const doctorExists = await tenantDb.doctor.findUnique({
+                where: { id: doctorId }
+            });
+
+            if (!doctorExists) {
+                results.push({
+                    success: false,
+                    message: 'Doctor not found',
+                    doctorId
+                });
+                continue;
+            }
+
+            // Check if hospital exists
+            const hospitalExists = await tenantDb.hospital.findUnique({
+                where: { id: hospitalId }
+            });
+
+            if (!hospitalExists) {
+                results.push({
+                    success: false,
+                    message: 'Hospital not found',
+                    hospitalId
+                });
+                continue;
+            }
+
+            // If isPrimary is true, unset other primary associations for this doctor
+            if (isPrimary) {
+                await tenantDb.doctorHospitalAssociation.updateMany({
+                    where: {
+                        doctorId,
+                        isPrimary: true
+                    },
+                    data: {
+                        isPrimary: false
                     }
+                });
+            }
+
+            // Create the association
+            const association = await tenantDb.doctorHospitalAssociation.create({
+                data: {
+                    doctorId,
+                    hospitalId,
+                    department,
+                    position,
+                    isPrimary: isPrimary || false,
+                    associationStartDate: associationStartDate ? new Date(associationStartDate) : null,
+                    associationEndDate: associationEndDate ? new Date(associationEndDate) : null
                 },
-                hospital: {
-                    select: {
-                        id: true,
-                        name: true,
-                        address: true,
-                        city: true
+                include: {
+                    doctor: {
+                        select: {
+                            id: true,
+                            name: true,
+                            specialization: true,
+                            email: true
+                        }
+                    },
+                    hospital: {
+                        select: {
+                            id: true,
+                            name: true,
+                            address: true,
+                            city: true
+                        }
                     }
                 }
-            }
-        });
+            });
+
+            results.push({
+                success: true,
+                message: 'Doctor-hospital association created successfully',
+                association
+            });
+        }
 
         return res.status(201).json({
             success: true,
-            message: 'Doctor-hospital association created successfully',
-            association
+            message: 'Associations processed',
+            results
         });
 
     } catch (error: any) {
-        console.error('Error creating doctor-hospital association:', error);
+        console.error('Error creating doctor-hospital associations:', error);
         return res.status(500).json({
             success: false,
-            message: 'An error occurred while creating the association',
+            message: 'An error occurred while creating associations',
             error: error.message
         });
     }

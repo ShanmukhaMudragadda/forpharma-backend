@@ -13,24 +13,21 @@ const isValidEmail = (email: string): boolean => {
 export const createDoctorChemistRelation = async (req: Request, res: Response) => {
     try {
         const tenantDb = req.tenantDb;
-        const { doctorId, chemistId } = req.body;
-        const createdById = req.user?.id; // Assuming user info is attached to request
+        const { relations } = req.body; // Array of { doctorId, chemistId }
+        const createdById = req.user?.id;
 
-        // Validation
         if (!tenantDb) {
             return res.status(500).json({
                 success: false,
                 message: 'Tenant database connection not established'
             });
         }
-
-        if (!doctorId || !chemistId) {
+        if (!Array.isArray(relations) || relations.length === 0) {
             return res.status(400).json({
                 success: false,
-                message: 'Doctor ID and Chemist ID are required'
+                message: 'Relations array is required'
             });
         }
-
         if (!createdById) {
             return res.status(401).json({
                 success: false,
@@ -38,80 +35,52 @@ export const createDoctorChemistRelation = async (req: Request, res: Response) =
             });
         }
 
-        // Check if doctor exists
-        const doctorExists = await tenantDb.doctor.findUnique({
-            where: { id: doctorId }
-        });
-
-        if (!doctorExists) {
-            return res.status(404).json({
-                success: false,
-                message: 'Doctor not found'
-            });
-        }
-
-        // Check if chemist exists
-        const chemistExists = await tenantDb.chemist.findUnique({
-            where: { id: chemistId }
-        });
-
-        if (!chemistExists) {
-            return res.status(404).json({
-                success: false,
-                message: 'Chemist not found'
-            });
-        }
-
-        // Check if relation already exists
-        const existingRelation = await tenantDb.doctorChemistRelation.findFirst({
-            where: {
-                doctorId,
-                chemistId
+        const createdRelations = [];
+        const skippedRelations = [];
+        for (const rel of relations) {
+            const { doctorId, chemistId } = rel;
+            if (!doctorId || !chemistId) {
+                skippedRelations.push({ doctorId, chemistId, reason: 'Missing doctorId or chemistId' });
+                continue;
             }
-        });
-
-        if (existingRelation) {
-            return res.status(409).json({
-                success: false,
-                message: 'Relation already exists between this doctor and chemist'
-            });
-        }
-
-        // Create the relation
-        const relation = await tenantDb.doctorChemistRelation.create({
-            data: {
-                doctorId,
-                chemistId,
-                createdById
-            },
-            include: {
-                doctor: {
-                    select: {
-                        id: true,
-                        name: true,
-                        specialization: true
-                    }
+            // Check if doctor exists
+            const doctorExists = await tenantDb.doctor.findUnique({ where: { id: doctorId } });
+            if (!doctorExists) {
+                skippedRelations.push({ doctorId, chemistId, reason: 'Doctor not found' });
+                continue;
+            }
+            // Check if chemist exists
+            const chemistExists = await tenantDb.chemist.findUnique({ where: { id: chemistId } });
+            if (!chemistExists) {
+                skippedRelations.push({ doctorId, chemistId, reason: 'Chemist not found' });
+                continue;
+            }
+            // Check if relation already exists
+            const existingRelation = await tenantDb.doctorChemistRelation.findFirst({ where: { doctorId, chemistId } });
+            if (existingRelation) {
+                skippedRelations.push({ doctorId, chemistId, reason: 'Relation already exists' });
+                continue;
+            }
+            // Create the relation
+            const relation = await tenantDb.doctorChemistRelation.create({
+                data: {
+                    doctorId,
+                    chemistId,
+                    createdById
                 },
-                chemist: {
-                    select: {
-                        id: true,
-                        name: true,
-                        type: true
-                    }
-                },
-                createdBy: {
-                    select: {
-                        id: true,
-                        email: true
-                    }
+                include: {
+                    doctor: { select: { id: true, name: true, specialization: true } },
+                    chemist: { select: { id: true, name: true, type: true } },
+                    createdBy: { select: { id: true, email: true } }
                 }
-            }
-        });
-
+            });
+            createdRelations.push(relation);
+        }
         return res.status(201).json({
             success: true,
-            message: 'Doctor-chemist relation created successfully',
-            relation
+            message: 'Doctor-chemist relations processed',
+            createdRelations,
+            skippedRelations
         });
 
     } catch (error: any) {
