@@ -13,7 +13,7 @@ const schemaService = SchemaManagementService.getInstance();
 router.use(tenantMiddleware);
 
 router.post('/create', createDrug);
-router.delete('/delete', deleteDrug);
+router.delete('/delete/":drugId', deleteDrug);
 router.get('/getDrugDetails/:drugId', getDrugDetails);
 router.get('/getDrugsList', getDrugList);
 router.put('/updateDrug/:drugId', updateDrug);
