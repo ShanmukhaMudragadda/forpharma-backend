@@ -50,7 +50,7 @@ export const createDoctorInteraction = async (req: Request, res: Response) => {
         }
 
         // Validate rating if provided
-        if (rating !== undefined && (rating < 1 || rating > 5)) {
+        if (rating !== undefined) {
             return res.status(400).json({
                 success: false,
                 message: 'Rating must be between 1 and 5'

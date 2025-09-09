@@ -16,11 +16,10 @@ export const createChemistInteraction = async (req: Request, res: Response) => {
         const {
             chemistId,
             interactionType,
-            startTime,
-            endTime,
-            purpose,
-            outcome,
-            comments,
+            meetingStartTime,
+            meetingEndTime,
+            meetingPurpose,
+            meetingOutcome,
             rating,
             chemistTaskId
         } = req.body;
@@ -34,7 +33,7 @@ export const createChemistInteraction = async (req: Request, res: Response) => {
             });
         }
 
-        if (!chemistId || !interactionType || !startTime) {
+        if (!chemistId || !interactionType || !meetingStartTime) {
             return res.status(400).json({
                 success: false,
                 message: 'Chemist ID, interaction type, and start time are required'
@@ -49,7 +48,7 @@ export const createChemistInteraction = async (req: Request, res: Response) => {
         }
 
         // Validate rating if provided
-        if (rating !== undefined && (rating < 1 || rating > 5)) {
+        if (rating !== undefined) {
             return res.status(400).json({
                 success: false,
                 message: 'Rating must be between 1 and 5'
@@ -95,8 +94,8 @@ export const createChemistInteraction = async (req: Request, res: Response) => {
         }
 
         // Validate start and end times
-        const startDateTime = new Date(startTime);
-        const endDateTime = endTime ? new Date(endTime) : null;
+        const startDateTime = new Date(meetingStartTime);
+        const endDateTime = meetingEndTime ? new Date(meetingEndTime) : null;
 
         if (endDateTime && endDateTime <= startDateTime) {
             return res.status(400).json({
@@ -113,9 +112,8 @@ export const createChemistInteraction = async (req: Request, res: Response) => {
                 interactionType,
                 startTime: startDateTime,
                 endTime: endDateTime,
-                purpose: purpose?.trim(),
-                outcome: outcome?.trim(),
-                comments: comments?.trim(),
+                purpose: meetingPurpose?.trim(),
+                outcome: meetingOutcome?.trim(),
                 rating,
                 chemistTaskId
             },

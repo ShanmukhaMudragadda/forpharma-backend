@@ -477,7 +477,7 @@ model Drug {
     indications         String?  @db.Text
     sideEffects         String?  @map("side_effects") @db.Text
     safetyAdvice        String?  @map("safety_advice") @db.Text
-    dosageForms         Json?    @map("dosage_forms") @db.JsonB // JSON, ENUM, or String?
+    dosageForms         String?  @map("dosage_forms") // JSON, ENUM, or String?
     price               Decimal? @db.Decimal(10, 2)
     schedule            String?  @db.VarChar(10)
     regulatoryApprovals String?  @map("regulatory_approvals") @db.Text
