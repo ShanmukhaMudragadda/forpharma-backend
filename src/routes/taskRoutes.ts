@@ -12,9 +12,9 @@ const router = express.Router();
 router.use(tenantMiddleware);
 
 router.post('/createTask', createTaskController)
-router.post('/deletetask/:type/:task_id', deleteTaskController)
-router.post('/updateTask/:type/:task_id', updateTaskController)
-router.post('/updateTaskCompletionStatus/:type/:task_id', updateTaskCompletionStatusController)
+router.delete('/deletetask/:type/:task_id', deleteTaskController)
+router.put('/updateTask/:type/:task_id', updateTaskController)
+router.put('/updateTaskCompletionStatus/:type/:task_id', updateTaskCompletionStatusController)
 router.get('/getTasks/:date', getTasksController)
 router.get('/getTasksOfPlannerId/:plannerId', getTasksOfPlannerController)
 

@@ -10,8 +10,8 @@ const router = express.Router();
 
 router.use(tenantMiddleware);
 router.post('/createTaskPlanner', createTaskPlannerController);
-router.post('/deleteTaskPlanner/:taskPlanner_id', deleteTaskPlannerController)
-router.post('/updateTaskPlannerStatus/:taskPlanner_id', updateTaskPlannerStatusController)
+router.delete('/deleteTaskPlanner/:taskPlanner_id', deleteTaskPlannerController)
+router.put('/updateTaskPlannerStatus/:taskPlanner_id', updateTaskPlannerStatusController)
 
 router.get('/getTaskPlanner', getTaskPlannerController)
 
