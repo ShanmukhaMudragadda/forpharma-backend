@@ -48,12 +48,12 @@ export const createChemistInteraction = async (req: Request, res: Response) => {
         }
 
         // Validate rating if provided
-        if (rating !== undefined) {
-            return res.status(400).json({
-                success: false,
-                message: 'Rating must be between 1 and 5'
-            });
-        }
+        // if (rating !== undefined) {
+        //     return res.status(400).json({
+        //         success: false,
+        //         message: 'Rating must be between 1 and 5'
+        //     });
+        // }
 
         // Check if chemist exists
         const chemistExists = await tenantDb.chemist.findUnique({
